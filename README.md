@@ -21,8 +21,8 @@ while the core features are functional, testing and fine-tuning are still in pro
 
 - [Original link]() - Main Language
 - [React](https://reactjs.org/) - JavaScript library for UI
-- [Redux](https://redux-toolkit.js.org/) - Global State Management
-- [Nest.js](https://nestjs.com/) - Node.js Framework
+- [Zustand](https://zustand.docs.pmnd.rs/) - Global State Management
+- [Node.js](https://nodejs.org/en) - Node.js Framework
 - [Socket.IO](https://socket.io/) - Web Socket
 - [TailwindCSS](https://tailwindcss.com/) - CSS Framework
 - [Mongodb](https://www.mongodb.com/) - BJSON Database
