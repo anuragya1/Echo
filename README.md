@@ -2,6 +2,8 @@
 
 # Echo
 
+ **Note:** This project started from [OriginalProject](https://github.com/srujan-nalam/Link-chat-application.git) as a base, but the backend, frontend, and features have been redesigned and implemented according to my vision.
+ 
 Echo is a full stack realtime chat application. You can chat privately or in groups, share images, and manage your profile , all in a responsive dark-themed interface.
 while the core features are functional, testing and fine-tuning are still in progress.
 
@@ -17,7 +19,7 @@ while the core features are functional, testing and fine-tuning are still in pro
 
 ## :hammer_and_wrench: Built With
 
-- [Typescript](https://www.typescriptlang.org/) - Main Language
+- [Original link]() - Main Language
 - [React](https://reactjs.org/) - JavaScript library for UI
 - [Redux](https://redux-toolkit.js.org/) - Global State Management
 - [Nest.js](https://nestjs.com/) - Node.js Framework
@@ -31,5 +33,5 @@ while the core features are functional, testing and fine-tuning are still in pro
 - [JS Cookie](https://www.npmjs.com/package/js-cookie) - Cookie
 - [Cloudinary](https://www.cloudinary.com/) - Image Storage
 
-# Status
+## Status
 Echo is alive and functional — refinement, testing, and polish coming soon.
