@@ -4,6 +4,7 @@ import PageInfo from "../../components/layout/ContentArea/PageInfo";
 import { getUser } from "../../services/userService";
 import Info from "./components/Info";
 import Tabs from "./components/Tabs";
+import type { User } from "../../utils/types";
 
 const Profile = () => {
     const location = useLocation();

@@ -1,4 +1,5 @@
 import axiosWithAuth from "../utils/axiosWithAuth";
+import type { message } from "../utils/types";
 
 export const getMessage = async (id: string) => {
     const { data } = await axiosWithAuth.get(`/messages/${id}`);
@@ -10,7 +11,7 @@ export const getMessagesByChannel = async (channelId:string) => {
     return data;
 }
 
-export const createMessage = async (message: Message) => {
+export const createMessage = async (message: message) => {
     const { data } = await axiosWithAuth.post('/messages', message);
     return data;
 }

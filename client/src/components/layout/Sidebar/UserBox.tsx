@@ -1,22 +1,21 @@
 import { LazyLoadImage } from 'react-lazy-load-image-component'
-import { useSelector } from 'react-redux'
 import { RxDotsVertical } from 'react-icons/rx';
 import { FaUserFriends } from 'react-icons/fa';
 import { FiLogOut } from 'react-icons/fi';
-import { useDispatch } from 'react-redux';
+
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { IoPersonAddSharp } from 'react-icons/io5';
 import { MdAddToPhotos } from 'react-icons/md';
 
-import { RootState } from '../../../redux/store'
-import { logOut } from '../../../redux/features/authSlice';
 import { getUser } from '../../../services/userService';
-
+import type { User } from '../../../utils/types';
+import { useAuthStore } from '../../../zustand/store/useAuthStore';
 const UserBox = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.auth.user);
+
+  const user = useAuthStore((state)=> state.user)
+  const logout =  useAuthStore((state)=> state.logOut)
   const [loggedUser, setLoggedUser] = useState<User>();
 
   useEffect(() => {
@@ -64,7 +63,9 @@ const UserBox = () => {
           </button>
           <button
             className='w-full hover:bg-neutral-700 duration-200 p-3 px-8 flex items-center'
-            onClick={() => dispatch(logOut())}
+            onClick={() => {
+             logout();
+            } }
           >
             <FiLogOut className='mr-3' />
             Logout

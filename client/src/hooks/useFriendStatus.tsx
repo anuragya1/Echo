@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-
-import { RootState } from '../redux/store';
 import { checkFriend, setFriend } from '../services/userService';
+import { useAuthStore } from '../zustand/store/useAuthStore';
 
 const useFriendStatus = (id: string) => {
-    const user = useSelector((state: RootState) => state.auth.user);
+    const user = useAuthStore((state) => state.user);
     const [isFriend, setIsFriend] = useState<boolean>(true);
     const [isPending, setIsPending] = useState<boolean>(true);
 

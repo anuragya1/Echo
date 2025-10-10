@@ -1,81 +1,84 @@
-import { LazyLoadImage } from 'react-lazy-load-image-component'
-import { useSelector } from 'react-redux'
-
-import { RootState } from '../../redux/store'
-import PageInfo from '../../components/layout/ContentArea/PageInfo'
-import { useEffect, useRef, useState } from 'react'
-import { getUser, updateUser, uploadUserImage } from '../../services/userService'
-import BasicButton from '../../components/buttons/BasicButton'
-import { toast, Toaster } from 'react-hot-toast'
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { useEffect, useRef, useState } from 'react';
+import { toast, Toaster } from 'react-hot-toast';
+import type { User } from '../../utils/types';
+import { useAuthStore } from '../../zustand/store/useAuthStore';
+import PageInfo from '../../components/layout/ContentArea/PageInfo';
+import BasicButton from '../../components/buttons/BasicButton';
+import { getUser, updateUser, uploadUserImage } from '../../services/userService';
 
 const ProfileEdit = () => {
-    const user = useSelector((state: RootState) => state.auth.user);
-    const [details, setDetails] = useState<User>();
-    const [image, setImage] = useState<any>();
-    const [name, setName] = useState<string>('');
-    const inputRef = useRef<any>(null);
+  const user = useAuthStore((state) => state.user); 
+  const [details, setDetails] = useState<User>();
+  const [image, setImage] = useState<any>();
+  const [name, setName] = useState<string>('');
+  const inputRef = useRef<any>(null);
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            const result = await getUser(user?.id!);
-            setDetails(result.user);
-        };
-
-        fetchUser();
-    }, [user?.id]);
-
-    const handleSubmit = async (e: any) => {
-        e.preventDefault();
-
-        const username = e.target.username.value;
-        const about = e.target.about.value;
-        
-        if (!username) return;
-        if (image) {
-            const secureUrl = await uploadUserImage(image);
-            var { statusCode, message } = await updateUser(user?.id!, { username, about, image: secureUrl });
-        } else {
-            var { statusCode, message } = await updateUser(user?.id!, { username, about });
-        }
-
-        if (statusCode === '200') {
-            return toast.success(message, {
-                duration: 3000,
-                position: 'bottom-center',
-                style: {
-                    backgroundColor: '#353535',
-                    color: '#fff'
-                }
-            });
-        }
-
-        return toast.error(message, {
-            duration: 3000,
-            position: 'bottom-center',
-            style: {
-                backgroundColor: '#353535',
-                color: '#fff'
-            }
-        });
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!user?.id) return;
+      const result = await getUser(user.id);
+      setDetails(result.user);
     };
 
-    const handleClick = () => {
-        inputRef.current.click();
-    };
+    fetchUser();
+  }, [user?.id]);
 
-    const handleChange = (e: any) => {
-        const imageFile = e.target.files[0];
-        setName(imageFile.name);
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
 
-        if (imageFile && FileReader) {
-            const fr = new FileReader();
-            fr.onload = () => {
-                setImage(fr.result)
-            }
-            fr.readAsDataURL(imageFile);
-        }
-    };
+    const username = e.target.username.value;
+    const about = e.target.about.value;
 
+    if (!username) return;
+
+    let statusCode: string;
+    let message: string;
+
+    if (image) {
+      const secureUrl = await uploadUserImage(image);
+      ({ statusCode, message } = await updateUser(user?.id!, { username, about, image: secureUrl }));
+    } else {
+      ({ statusCode, message } = await updateUser(user?.id!, { username, about }));
+    }
+
+    if (statusCode === '200') {
+      return toast.success(message, {
+        duration: 3000,
+        position: 'bottom-center',
+        style: {
+          backgroundColor: '#353535',
+          color: '#fff',
+        },
+      });
+    }
+
+    return toast.error(message, {
+      duration: 3000,
+      position: 'bottom-center',
+      style: {
+        backgroundColor: '#353535',
+        color: '#fff',
+      },
+    });
+  };
+
+  const handleClick = () => {
+    inputRef.current.click();
+  };
+
+  const handleChange = (e: any) => {
+    const imageFile = e.target.files[0];
+    setName(imageFile.name);
+
+    if (imageFile && FileReader) {
+      const fr = new FileReader();
+      fr.onload = () => {
+        setImage(fr.result);
+      };
+      fr.readAsDataURL(imageFile);
+    }
+  };
     return (
         <section>
             <PageInfo isChannel={false} name='Edit Profile' />

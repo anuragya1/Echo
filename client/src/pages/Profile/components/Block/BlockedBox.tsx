@@ -1,10 +1,10 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { BiBlock } from "react-icons/bi";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { useNavigate } from "react-router-dom";
 import IconButton from "../../../../components/buttons/IconButton";
-
+import type { User } from "../../../../utils/types";
 import useBlockStatus from "../../../../hooks/useBlockStatus";
 
 type Props = {

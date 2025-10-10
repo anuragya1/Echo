@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import type{ FC } from 'react';
 import { FaRegCheckCircle } from 'react-icons/fa';
 
 type Props = {

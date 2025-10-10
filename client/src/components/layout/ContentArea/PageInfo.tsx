@@ -1,9 +1,9 @@
-import { FC } from 'react'
+import type{ FC } from 'react'
 import { FaArrowLeft } from 'react-icons/fa';
 import { RxDotsVertical } from 'react-icons/rx';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { useLocation, useNavigate } from 'react-router-dom';
-
+import type { User } from '../../../utils/types';
 type Props = {
     image?: string;
     name: string;

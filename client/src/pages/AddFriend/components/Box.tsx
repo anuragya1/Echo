@@ -1,22 +1,23 @@
-import { FC } from 'react'
+import type{ FC } from 'react'
 import { toast, Toaster } from 'react-hot-toast';
 import { BiBlock } from 'react-icons/bi';
 import { IoPersonAdd, IoPersonRemove } from 'react-icons/io5';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { useSelector } from 'react-redux';
+
 import { useNavigate } from 'react-router-dom';
 import IconButton from '../../../components/buttons/IconButton';
 import useBlockStatus from '../../../hooks/useBlockStatus';
 import useFriendStatus from '../../../hooks/useFriendStatus';
-import { RootState } from '../../../redux/store';
+import type { User } from '../../../utils/types';
 import { setRequest } from '../../../services/userService';
+import { useAuthStore } from '../../../zustand/store/useAuthStore';
 
 type Props = {
     user: User;
 }
 
 const Box: FC<Props> = ({ user }) => {
-    const currentUser = useSelector((state: RootState) => state.auth.user);
+    const currentUser = useAuthStore((state) => state.user);
     const navigate = useNavigate();
 
     const { isFriend, isPending, removeFriend } = useFriendStatus(user.id);

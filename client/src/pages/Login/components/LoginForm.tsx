@@ -1,61 +1,66 @@
-import Cookies from 'js-cookie';
-import jwtDecode from 'jwt-decode';
-import { Dispatch, FC, SetStateAction } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast, Toaster } from 'react-hot-toast';
-import { AiFillLock } from 'react-icons/ai';
-import { MdMail } from 'react-icons/md';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import type { Dispatch, FC, SetStateAction } from "react";
+import { useForm } from "react-hook-form";
+import { toast, Toaster } from "react-hot-toast";
+import { AiFillLock } from "react-icons/ai";
+import { MdMail } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
-import BasicButton from '../../../components/buttons/BasicButton';
-import PasswordInput from '../../../components/inputs/PasswordInput';
-import TextInput from '../../../components/inputs/TextInput';
-import { setUser } from '../../../redux/features/authSlice';
-import { logIn } from '../../../services/authService';
+import BasicButton from "../../../components/buttons/BasicButton";
+import PasswordInput from "../../../components/inputs/PasswordInput";
+import TextInput from "../../../components/inputs/TextInput";
+import { logIn } from "../../../services/authService";
+import { useAuthStore } from "../../../zustand/store/useAuthStore";
 
 type Props = {
   setIsFormOpen: Dispatch<SetStateAction<boolean>>;
-}
+};
 
 const LoginForm: FC<Props> = ({ setIsFormOpen }) => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+
+  const setUser = useAuthStore((state) => state.setUser);
 
   const {
     register,
     reset,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
   } = useForm();
 
   const onSubmit = async (data: any) => {
     const result = await logIn({ email: data.email, password: data.password });
-    if (result.statusCode === '200') {
+
+    if (result.statusCode === "200") {
       setIsFormOpen(false);
 
       const { id, username, image }: any = jwtDecode(result.access_token);
-      Cookies.set('access_token', result.access_token,{expires:3});
-      Cookies.set('last_user', id);
+      Cookies.set("access_token", result.access_token, { expires: 3 });
+      Cookies.set("last_user", id);
 
-      dispatch(setUser({
+    
+      setUser({
         username,
         id,
-        image
-      }));
-      return setTimeout(() => {
-        return navigate('/');
+        image,
+      });
+
+      setTimeout(() => {
+        navigate("/");
       }, 2000);
+      return;
     }
 
     reset();
     toast.error(result.message, {
       duration: 3000,
-      position: 'bottom-center',
+      position: "bottom-center",
       style: {
-        backgroundColor: '#353535',
-        color: '#fff'
-      }
+        backgroundColor: "#353535",
+        color: "#fff",
+      },
     });
   };
 

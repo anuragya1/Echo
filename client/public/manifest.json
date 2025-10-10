@@ -1,6 +1,6 @@
 {
-  "short_name": "Link Chat",
-  "name": "Link Chat App",
+  "short_name": "echo",
+  "name": "echo chat app",
   "icons": [
     {
       "src": "favicon.ico",

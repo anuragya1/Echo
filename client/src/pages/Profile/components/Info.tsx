@@ -1,25 +1,26 @@
-import { FC } from "react";
+import type{ FC } from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { HiUserAdd, HiUserRemove } from "react-icons/hi";
 import { ImBlocked } from "react-icons/im";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { useSelector } from "react-redux";
+
 import { useNavigate } from "react-router-dom";
 
-import { RootState } from "../../../redux/store";
+
 import IconButton from "../../../components/buttons/IconButton";
 import useBlockStatus from "../../../hooks/useBlockStatus";
 import useFriendStatus from "../../../hooks/useFriendStatus";
 import { setRequest } from "../../../services/userService";
 import { toast } from "react-hot-toast";
-
+import type { User } from "../../../utils/types";
+import { useAuthStore } from "../../../zustand/store/useAuthStore";
 type Props = {
     details: User;
 }
 
 const Info: FC<Props> = ({ details }) => {
     const navigate = useNavigate();
-    const user = useSelector((state: RootState) => state.auth.user);
+    const user = useAuthStore((state) => state.user);
     const { isPending, isFriend, removeFriend } = useFriendStatus(details?.id);
     const { isBlocked, addBlock, removeBlock } = useBlockStatus(details?.id);
 

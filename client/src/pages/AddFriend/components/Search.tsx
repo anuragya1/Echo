@@ -1,4 +1,4 @@
-import { Dispatch, FC, SetStateAction } from "react";
+import type{ Dispatch, FC, SetStateAction } from "react";
 import { BiSearchAlt2 } from "react-icons/bi";
 
 type Props = {

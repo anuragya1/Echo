@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom';
 import { getRequests } from '../../../../services/userService';
 import RequestBox from './RequestBox';
-
+import type { User } from "../../../../utils/types";
 const RequestsTab = () => {
   const location = useLocation();
   const [requests, setRequests] = useState<User[]>();

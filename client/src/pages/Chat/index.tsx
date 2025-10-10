@@ -1,26 +1,28 @@
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux';
+
 import { useLocation } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+
 
 import PageInfo from '../../components/layout/ContentArea/PageInfo';
 import Spinner from '../../components/loading/Spinner';
 import useChatScroll from '../../hooks/useChatScroll';
 import socket from '../../lib/socket';
-import { RootState } from '../../redux/store';
+
 import { getChannel } from '../../services/channelService';
 import { getMessagesByChannel } from '../../services/messageService';
 import ChatInput from './components/ChatInput';
 import Message from './components/Message';
-import { setRefresh } from '../../redux/features/channelSlice';
+import { useAuthStore } from '../../zustand/store/useAuthStore';
+import type { channel,message } from '../../utils/types';
+import { useChannelStore } from '../../zustand/store/useChannelStore';
 
 const Chat = () => {
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user = useAuthStore((state) => state.user);
   const location = useLocation();
-  const dispatch = useDispatch();
+  const toggleRefresh = useChannelStore((state)=> state.toggleRefresh)
 
-  const [channel, setChannel] = useState<Channel>();
-  const [messages, setMessages] = useState<Message[]>();
+  const [channel, setChannel] = useState<channel>();
+  const [messages, setMessages] = useState<message[]>();
   const [isPending, setIsPending] = useState<boolean>(false);
   const ref = useChatScroll(messages);
 
@@ -48,14 +50,14 @@ const Chat = () => {
   useEffect(() => {
     socket.on('chat', (data) => {
       if (data.channelId === channel?.id) setMessages((prev: any) => [...prev, data]);
-      dispatch(setRefresh());
+       toggleRefresh();
     });
 
     return () => {
       socket.off('chat');
       socket.removeListener('chat')
     }
-  }, [channel?.id, dispatch]);
+  }, [channel?.id]);
 
   return (
     <section className='h-full relative overflow-hidden'>

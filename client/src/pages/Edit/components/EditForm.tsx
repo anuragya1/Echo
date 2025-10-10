@@ -1,4 +1,5 @@
-import { Dispatch, FC, SetStateAction, useRef } from 'react'
+import type{ Dispatch, FC, SetStateAction } from 'react'
+import {useRef } from 'react'
 import { toast, Toaster } from 'react-hot-toast';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { useDispatch } from 'react-redux';
@@ -7,11 +8,12 @@ import BasicButton from '../../../components/buttons/BasicButton';
 import { uploadUserImage } from '../../../services/userService';
 import Participants from './Participants';
 import { updateChannel } from '../../../services/channelService';
-import { setRefresh } from '../../../redux/features/channelSlice';
+import type { channel } from '../../../utils/types';
+import { useChannelStore } from '../../../zustand/store/useChannelStore';
 
 
 type Props = {
-    channel: Channel;
+    channel: channel;
     participants: string[];
     setParticipants: Dispatch<SetStateAction<string[]>>;
     admins: string[];
@@ -21,7 +23,7 @@ type Props = {
 }
 
 const EditForm: FC<Props> = ({ channel, participants, setParticipants, admins, setAdmins, image, setImage }) => {
-    const dispatch = useDispatch();
+     const toggleRefresh = useChannelStore((state)=>state.toggleRefresh)
     const inputRef = useRef<any>(null);
 
     const handleSubmit = async (e: any) => {
@@ -43,7 +45,7 @@ const EditForm: FC<Props> = ({ channel, participants, setParticipants, admins, s
         });
 
         if (statusCode === '200') {
-            dispatch(setRefresh());
+            toggleRefresh();
 
             return toast.success(message, {
                 duration: 3000,

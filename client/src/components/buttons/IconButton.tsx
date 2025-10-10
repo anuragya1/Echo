@@ -1,5 +1,5 @@
-import { FC } from 'react'
-import { IconType } from 'react-icons'
+import type{ FC } from 'react'
+import type { IconType } from 'react-icons'
 import Spinner from '../loading/Spinner';
 
 type Props = {

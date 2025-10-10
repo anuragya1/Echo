@@ -4,7 +4,7 @@ import Spinner from "../../components/loading/Spinner";
 import { getUsersBySearch } from "../../services/userService";
 import Box from "./components/Box";
 import Search from "./components/Search";
-
+import type { User } from "../../utils/types";
 const AddFriend = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [isPending, setIsPending] = useState<boolean>(false);

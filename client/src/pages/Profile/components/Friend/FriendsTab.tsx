@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 
 import { getFriends } from "../../../../services/userService";
 import FriendBox from "./FriendBox";
+import type { User } from "../../../../utils/types";
 
 const FriendsTab = () => {
   const location = useLocation();

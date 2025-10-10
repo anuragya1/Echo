@@ -1,29 +1,31 @@
-import { FC } from "react";
+import type{ FC } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { BiBlock, BiMessageDots } from "react-icons/bi";
 import { IoPersonRemoveSharp, IoPersonAddSharp } from "react-icons/io5";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+
 import { useDispatch } from "react-redux";
 
 import IconButton from "../../../../components/buttons/IconButton";
 import useBlockStatus from "../../../../hooks/useBlockStatus";
 import useFriendStatus from "../../../../hooks/useFriendStatus";
-import { RootState } from "../../../../redux/store";
+
 import { createChannel } from "../../../../services/channelService";
 import checkIsChannelExist from "../../../../utils/checkIsChannelExist";
-import { setRefresh } from "../../../../redux/features/channelSlice";
+import type { User } from "../../../../utils/types";
+import { useChannelStore } from "../../../../zustand/store/useChannelStore";
+import { useAuthStore } from "../../../../zustand/store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
     friend: User;
 };
 
 const FriendBox: FC<Props> = ({ friend }) => {
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const user = useSelector((state: RootState) => state.auth.user)
-    const { refresh } = useSelector((state: RootState) => state.channel);
+    const navigate= useNavigate();
+    
+    const user = useAuthStore((state)=>state.user)
+    const toggleRefresh = useChannelStore((state)=>state.toggleRefresh)
     const { isPending, isFriend, addFriend, removeFriend } = useFriendStatus(friend.id);
     const { isBlocked, addBlock, removeBlock } = useBlockStatus(friend.id);
 
@@ -87,7 +89,7 @@ const FriendBox: FC<Props> = ({ friend }) => {
             ]
         });
 
-        dispatch(setRefresh());
+          toggleRefresh();
         if (statusCode === '201') return navigate('/chat', { state: { channelId: channel.id } });
     };
 

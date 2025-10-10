@@ -1,16 +1,16 @@
-import { FC } from 'react';
+import type{ FC } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 import { AiFillStar } from 'react-icons/ai';
 import { BiBlock } from 'react-icons/bi';
 import { IoPersonAdd, IoPersonRemove } from 'react-icons/io5';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { useSelector } from 'react-redux';
 
 import IconButton from '../../../components/buttons/IconButton';
 import useBlockStatus from '../../../hooks/useBlockStatus';
 import useFriendStatus from '../../../hooks/useFriendStatus';
-import { RootState } from '../../../redux/store';
+import type { User } from '../../../utils/types';
 import { setRequest } from '../../../services/userService';
+import { useAuthStore } from '../../../zustand/store/useAuthStore';
 
 type Props = {
   participant: User;
@@ -18,7 +18,7 @@ type Props = {
 }
 
 const Participant: FC<Props> = ({ participant, isAdmin }) => {
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user = useAuthStore((state) => state.user);
   const { isFriend, removeFriend } = useFriendStatus(participant.id);
   const { isBlocked, isPending, addBlock, removeBlock } = useBlockStatus(participant.id);
 

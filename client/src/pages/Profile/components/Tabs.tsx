@@ -1,8 +1,8 @@
-import { FC, useState, useTransition } from "react";
-import { useSelector } from "react-redux"
+import type{ FC } from "react";
+import { useState, useTransition } from "react";
 
 import Spinner from "../../../components/loading/Spinner";
-import { RootState } from "../../../redux/store"
+import { useAuthStore } from "../../../zustand/store/useAuthStore";
 import BlockedTab from "./Block/BlockedTab";
 import FriendsTab from "./Friend/FriendsTab";
 import RequestsTab from "./Request/RequestsTab";
@@ -12,7 +12,7 @@ type Props = {
 }
 
 const Tabs: FC<Props> = ({ profileId }) => {
-    const user = useSelector((state: RootState) => state.auth.user);
+    const user = useAuthStore((state) => state.user);
     const [tab, setTab] = useState('friends');
     const [isPending, startTransition] = useTransition();
 

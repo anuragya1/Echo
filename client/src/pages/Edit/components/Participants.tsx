@@ -1,10 +1,9 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-
-import { RootState } from "../../../redux/store";
+import type{ Dispatch, FC, SetStateAction } from "react";
+import { useState,useEffect } from "react";
+import { useAuthStore } from "../../../zustand/store/useAuthStore";
 import { getFriends } from "../../../services/userService";
 import UserBar from "./UserBar";
-
+import type { User } from "../../../utils/types";
 type Props = {
     participants: string[];
     setParticipants: Dispatch<SetStateAction<string[]>>;
@@ -13,7 +12,7 @@ type Props = {
 }
 
 const Participants: FC<Props> = ({ participants, setParticipants, admins, setAdmins }) => {
-    const user = useSelector((state: RootState) => state.auth.user);
+    const user = useAuthStore((state) => state.user);
     const [search, setSearch] = useState<string>('');
     const [friends, setFriends] = useState<User[]>();
 

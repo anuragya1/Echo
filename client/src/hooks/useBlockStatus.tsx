@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { RootState } from '../redux/store';
 import { checkBlock, setBlocked } from '../services/userService';
+import { useAuthStore } from '../zustand/store/useAuthStore';
 
 const useBlockStatus = (id: string) => {
-    const user = useSelector((state: RootState) => state.auth.user);
+    const user = useAuthStore((state) => state.user);
     const [isPending, setIsPending] = useState<boolean>(true);
     const [isBlocked, setIsBlocked] = useState<boolean>(false);
 

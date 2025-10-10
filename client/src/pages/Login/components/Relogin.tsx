@@ -1,15 +1,15 @@
 import Cookies from "js-cookie";
-import jwtDecode from "jwt-decode";
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import type { Dispatch, FC, SetStateAction } from "react";
+import { useState, useEffect } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { AiFillLock } from "react-icons/ai";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import type { User } from "../../../utils/types";
 import BasicButton from "../../../components/buttons/BasicButton";
 import PasswordInput from "../../../components/inputs/PasswordInput";
-import { logOut, setUser } from "../../../redux/features/authSlice";
+import { useAuthStore } from "../../../zustand/store/useAuthStore";
 import { logIn } from "../../../services/authService";
 import { getUser } from "../../../services/userService";
 
@@ -17,18 +17,22 @@ type Props = {
   id: string;
   setIsFormOpen: Dispatch<SetStateAction<boolean>>;
   setLastId: Dispatch<SetStateAction<string>>;
-}
+};
 
 const Relogin: FC<Props> = ({ id, setIsFormOpen, setLastId }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+
+
+  const setUser = useAuthStore((state) => state.setUser);
+  const logOut = useAuthStore((state) => state.logOut);
+
   const [lastUser, setLastUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       const result = await getUser(id);
       setLastUser(result.user);
-    }
+    };
 
     fetchUser();
   }, [id]);
@@ -36,44 +40,46 @@ const Relogin: FC<Props> = ({ id, setIsFormOpen, setLastId }) => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    const password = await e.target.password.value;
+    const password = e.target.password.value;
     if (!password) return;
+
     const result = await logIn({ email: lastUser?.email!, password });
 
-    if (result.statusCode === '200') {
+    if (result.statusCode === "200") {
       setIsFormOpen(false);
 
       const { id, username, image }: any = jwtDecode(result.access_token);
-      Cookies.set('access_token', result.access_token, { expires: 3 });
-      Cookies.set('last_user', id);
+      Cookies.set("access_token", result.access_token, { expires: 3 });
+      Cookies.set("last_user", id);
 
-      dispatch(setUser({
-        id,
-        username,
-        image
-      }));
-      return setTimeout(() => {
-        navigate('/');
+
+      setUser({ id, username, image });
+
+      setTimeout(() => {
+        navigate("/");
       }, 2000);
+      return;
     }
 
-    e.target.password.value = '';
+    e.target.password.value = "";
     toast.error(result.message, {
       duration: 3000,
-      position: 'bottom-center',
+      position: "bottom-center",
       style: {
-        backgroundColor: '#353535',
-        color: '#fff'
-      }
+        backgroundColor: "#353535",
+        color: "#fff",
+      },
     });
-  }
+  };
 
   const handleClickChange = () => {
-    Cookies.remove('access_token');
-    Cookies.remove('last_user');
-    dispatch(logOut());
-    setLastId('');
-  }
+    Cookies.remove("access_token");
+    Cookies.remove("last_user");
+
+    // ✅ Zustand logout
+    logOut();
+    setLastId("");
+  };
 
   return (
     <div className="w-full">

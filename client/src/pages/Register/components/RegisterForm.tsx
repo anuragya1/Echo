@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form';
-import { Dispatch, FC, SetStateAction } from 'react';
+import type { Dispatch, FC, SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MdMail } from 'react-icons/md';
 import { HiUser } from 'react-icons/hi';

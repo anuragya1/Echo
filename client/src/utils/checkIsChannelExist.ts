@@ -2,7 +2,7 @@ import { getChannelsByUser } from '../services/channelService';
 
 const checkIsChannelExist = async (userId: string, otherId: string) => {
   const { channels } = await getChannelsByUser(userId);
-  var channelId: string = '';
+  let channelId: string = '';
 
   for (let i = 0; i < channels.length; i++) {
     const result = await channels[i].participants.includes(otherId);

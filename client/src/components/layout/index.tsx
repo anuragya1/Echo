@@ -1,4 +1,4 @@
-import { FC, ReactNode } from 'react'
+import type{ FC, ReactNode } from 'react'
 import { useLocation } from 'react-router-dom';
 import ContentArea from './ContentArea';
 import Sidebar from './Sidebar';

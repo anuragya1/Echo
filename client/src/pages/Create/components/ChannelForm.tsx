@@ -1,21 +1,22 @@
 import { useRef, useState } from 'react'
 import { toast, Toaster } from 'react-hot-toast';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
+
 
 import Participants from './Participants';
 import BasicButton from '../../../components/buttons/BasicButton';
-import { RootState } from '../../../redux/store';
+
 import { createChannel } from '../../../services/channelService';
 import { uploadUserImage } from '../../../services/userService';
-import { setRefresh } from '../../../redux/features/channelSlice';
+
 import { NO_AVATAR_CHANNEL } from '../../../utils/constants';
+import { useAuthStore } from '../../../zustand/store/useAuthStore';
+import { useChannelStore } from '../../../zustand/store/useChannelStore';
 
 
 const ChannelForm = () => {
-    const dispatch = useDispatch();
-    const user = useSelector((state: RootState) => state.auth.user);
+    const toggleRefresh = useChannelStore((state)=>state.toggleRefresh)
+    const user = useAuthStore((state)=>state.user)
     const inputRef = useRef<any>(null);
     const [image, setImage] = useState<any>(null);
     const [participants, setParticipants] = useState<string[]>([user?.id!]);
@@ -44,7 +45,7 @@ const ChannelForm = () => {
             setAdmins([user?.id!]);
             setImage(null);
             e.target.reset();
-            dispatch(setRefresh());
+           toggleRefresh()
 
             return toast.success(message, {
                 duration: 3000,

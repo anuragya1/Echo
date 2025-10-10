@@ -1,83 +1,74 @@
-import { Dispatch, FC, SetStateAction } from 'react';
-import { toast, Toaster } from 'react-hot-toast';
-import { BiBlock } from 'react-icons/bi';
-import { BsCheck2 } from 'react-icons/bs';
-import { RxCross2 } from 'react-icons/rx';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import type { Dispatch, FC, SetStateAction } from "react";
+import { toast, Toaster } from "react-hot-toast";
+import { BiBlock } from "react-icons/bi";
+import { BsCheck2 } from "react-icons/bs";
+import { RxCross2 } from "react-icons/rx";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import { useNavigate } from "react-router-dom";
 
-import IconButton from '../../../../components/buttons/IconButton';
-import useBlockStatus from '../../../../hooks/useBlockStatus';
-import useFriendStatus from '../../../../hooks/useFriendStatus';
-import { RootState } from '../../../../redux/store';
-import { setRequest } from '../../../../services/userService';
+import IconButton from "../../../../components/buttons/IconButton";
+import useBlockStatus from "../../../../hooks/useBlockStatus";
+import useFriendStatus from "../../../../hooks/useFriendStatus";
+import { setRequest } from "../../../../services/userService";
+import { useAuthStore } from "../../../../zustand/store/useAuthStore";
+import type { User } from "../../../../utils/types";
 
 type Props = {
-    request: User;
-    setTrigger: Dispatch<SetStateAction<boolean>>;
-}
+  request: User;
+  setTrigger: Dispatch<SetStateAction<boolean>>;
+};
 
 const RequestBox: FC<Props> = ({ request, setTrigger }) => {
-    const user = useSelector((state: RootState) => state.auth.user);
-    const navigate = useNavigate();
-    const { isPending, isBlocked, addBlock, removeBlock } = useBlockStatus(request.id);
-    const { addFriend } = useFriendStatus(request.id);
+  const navigate = useNavigate();
 
-    const handleAccept = async () => {
-        const { statusCode, message } = await setRequest(user?.id!, request.id, false);
 
-        if (statusCode === '200') {
-            addFriend();
-            toast.success('Friend added successfully.', {
-                duration: 3000,
-                position: 'bottom-center',
-                style: {
-                    backgroundColor: '#353535',
-                    color: '#fff'
-                }
-            });
-            return setTrigger(prev => !prev);
-        }
+  const user = useAuthStore((state) => state.user);
 
-        return toast.error(message, {
-            duration: 3000,
-            position: 'bottom-center',
-            style: {
-                backgroundColor: '#353535',
-                color: '#fff'
-            }
-        });
-    };
+  const { isPending, isBlocked, addBlock, removeBlock } = useBlockStatus(request.id);
+  const { addFriend } = useFriendStatus(request.id);
 
-    const handleDecline = async () => {
-        await setRequest(user?.id!, request.id, false);
-        return setTrigger(prev => !prev);
-    };
+  const handleAccept = async () => {
+    const { statusCode, message } = await setRequest(user?.id!, request.id, false);
 
-    const handleBlock = () => {
-        addBlock();
-        return toast.success('User blocked successfully.', {
-            duration: 3000,
-            position: 'bottom-center',
-            style: {
-                backgroundColor: '#353535',
-                color: '#fff'
-            }
-        });
-    };
-
-    const handleUnblock = () => {
-        removeBlock();
-        return toast.success('User unblocked successfully.', {
-            duration: 3000,
-            position: 'bottom-center',
-            style: {
-                backgroundColor: '#353535',
-                color: '#fff'
-            }
-        });
+    if (statusCode === "200") {
+      addFriend();
+      toast.success("Friend added successfully.", {
+        duration: 3000,
+        position: "bottom-center",
+        style: { backgroundColor: "#353535", color: "#fff" },
+      });
+      return setTrigger((prev) => !prev);
     }
+
+    toast.error(message, {
+      duration: 3000,
+      position: "bottom-center",
+      style: { backgroundColor: "#353535", color: "#fff" },
+    });
+  };
+
+  const handleDecline = async () => {
+    await setRequest(user?.id!, request.id, false);
+    setTrigger((prev) => !prev);
+  };
+
+  const handleBlock = () => {
+    addBlock();
+    toast.success("User blocked successfully.", {
+      duration: 3000,
+      position: "bottom-center",
+      style: { backgroundColor: "#353535", color: "#fff" },
+    });
+  };
+
+  const handleUnblock = () => {
+    removeBlock();
+    toast.success("User unblocked successfully.", {
+      duration: 3000,
+      position: "bottom-center",
+      style: { backgroundColor: "#353535", color: "#fff" },
+    });
+  };
 
     return (
         <>

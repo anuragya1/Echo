@@ -3,10 +3,10 @@ import PageInfo from '../../components/layout/ContentArea/PageInfo';
 import EditForm from './components/EditForm';
 import { useEffect, useState } from 'react';
 import { getChannel } from '../../services/channelService';
-
+import type { channel } from '../../utils/types';
 const Create = () => {
     const { state } = useLocation();
-    const [channel, setChannel] = useState<Channel>();
+    const [channel, setChannel] = useState<channel>();
     const [participants, setParticipants] = useState<string[]>([]);
     const [admins, setAdmins] = useState<string[]>([]);
     const [image, setImage] = useState();

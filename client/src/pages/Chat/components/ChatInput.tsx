@@ -1,12 +1,14 @@
-import { Dispatch, FC, SetStateAction, useRef, useState } from 'react';
+import type{ Dispatch, FC, SetStateAction } from 'react';
+import { useRef, useState} from 'react';
 import { ImAttachment } from 'react-icons/im';
 import { IoMdSend } from 'react-icons/io';
 import { GiCancel } from 'react-icons/gi';
 import { useSelector } from 'react-redux';
 
 import socket from '../../../lib/socket';
-import { RootState } from '../../../redux/store';
+
 import { uploadImages } from '../../../services/userService';
+import { useAuthStore } from '../../../zustand/store/useAuthStore';
 
 type Props = {
     channelId: string;
@@ -14,7 +16,7 @@ type Props = {
 }
 
 const ChatInput: FC<Props> = ({ channelId, setMessages }) => {
-    const user = useSelector((state: RootState) => state.auth.user);
+    const user = useAuthStore((state)=> state.user)
     const [images, setImages] = useState<any[] | null>(null);
     const [isPending, setIsPending] = useState<boolean>(false);
     const uploadInputRef = useRef<any>(null);

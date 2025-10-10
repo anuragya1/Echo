@@ -2,24 +2,26 @@ import { useEffect, useState } from "react";
 import { RxExit } from "react-icons/rx";
 import { AiFillEdit } from "react-icons/ai";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { useSelector } from "react-redux";
+
 import { useLocation, useNavigate } from "react-router-dom";
 
 import IconButton from "../../components/buttons/IconButton";
 import PageInfo from "../../components/layout/ContentArea/PageInfo";
-import { RootState } from "../../redux/store";
+
 import { getChannel, updateChannel } from "../../services/channelService";
 import Participant from "./components/Participant";
-import { useDispatch } from "react-redux";
-import { setRefresh } from "../../redux/features/channelSlice";
+import { useAuthStore } from "../../zustand/store/useAuthStore";
+import type { channel } from "../../utils/types";
+import { useChannelStore } from "../../zustand/store/useChannelStore";
+
 
 const Channel = () => {
-    const dispatch = useDispatch();
+    
     const location = useLocation();
     const navigate = useNavigate();
-    const user = useSelector((state: RootState) => state.auth.user);
-    const [channel, setChannel] = useState<Channel>();
-
+    const user = useAuthStore((state)=>state.user)
+    const [channel, setChannel] = useState<channel>();
+    const toggleRefresh= useChannelStore((state)=>state.toggleRefresh);
     useEffect(() => {
         const fetchChannel = async () => {
             const result = await getChannel(location.state.channelId);
@@ -41,8 +43,7 @@ const Channel = () => {
         await updateChannel(location.state.channelId, {
             participants: newParticipants
         });
-
-        dispatch(setRefresh());
+         toggleRefresh();
         return navigate('/');
     }
 

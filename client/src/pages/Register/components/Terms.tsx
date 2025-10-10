@@ -12,7 +12,7 @@ const Terms = () => {
             <span className='text-white duration-200 hover:text-neutral-300 cursor-pointer'>
                 Cookies Policy
             </span>
-        </p>
+        </p> 
     )
 }
 

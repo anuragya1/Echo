@@ -1,10 +1,10 @@
-type signFormType = {
+export type signFormType = {
   email: string;
   username?: string;
   password: string;
 };
 
-type User = {
+export type User = {
   id: string;
   username: string;
   email: string;
@@ -15,7 +15,7 @@ type User = {
   blockeds: string[];
 };
 
-type Channel = {
+export type channel = {
   id: string;
   participants: any[];
   messages: string[];
@@ -27,7 +27,7 @@ type Channel = {
   updatedAt:any;
 };
 
-type Message = {
+export type message = {
   id: string;
   userId: string;
   user?: User;

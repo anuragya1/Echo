@@ -1,6 +1,7 @@
-import { FC, useState } from "react";
+import type { FC } from "react";
 import { AiFillEyeInvisible, AiFillEye } from 'react-icons/ai';
-import { IconType } from "react-icons/lib/esm/iconBase";
+import type { IconType } from "react-icons";
+import { useState } from "react";
 
 type Props = {
   label: string;

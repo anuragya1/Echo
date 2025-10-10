@@ -1,5 +1,5 @@
 import axiosWithAuth from "../utils/axiosWithAuth";
-
+import type { User } from "../utils/types";
 export const getChannel = async (id: string) => {
     const { data } = await axiosWithAuth.get(`/channels/${id}`);
 

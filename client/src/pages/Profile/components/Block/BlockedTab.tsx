@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 import { getBlocked } from '../../../../services/userService';
 import BlockedBox from './BlockedBox';
-
+import type { User } from "../../../../utils/types";
 const BlockedTab = () => {
   const location = useLocation();
   const [blocked, setBlocked] = useState<User[]>();

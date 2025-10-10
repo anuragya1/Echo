@@ -1,25 +1,25 @@
-import moment from 'moment';
-import { FC, useEffect, useState } from 'react'
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
+import moment from "moment";
+import type { FC } from "react";
+import { useState, useEffect } from "react";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import { useNavigate } from "react-router-dom";
 
-import { getUser } from '../../../services/userService';
-import { setLastSeen, setSelectedChannel } from '../../../redux/features/channelSlice';
-import { RootState } from '../../../redux/store';
+import { getUser } from "../../../services/userService";
+import type { channel, message, User } from "../../../utils/types";
+import { useChannelStore } from "../../../zustand/store/useChannelStore";
+
 
 type Props = {
-  channel: Channel;
+  channel: channel;
   userId: string;
-  lastMessage: Message | null;
+  lastMessage: message | null;
   search: string;
 }
 
 const ChannelBox: FC<Props> = ({ channel, userId, lastMessage, search }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { selectedChannel, lastSeen, refresh } = useSelector((state: RootState) => state.channel);
+  
+  const { selectedChannel, lastSeen, refresh ,setLastSeen,setSelectedChannel } = useChannelStore();
   const [blockList, setBlockList] = useState<string[]>([]);
   const [otherUser, setOtherUser] = useState<User>();
   const [isUnseen, setIsUnseen] = useState(false);
@@ -46,13 +46,9 @@ const ChannelBox: FC<Props> = ({ channel, userId, lastMessage, search }) => {
 
   const handleClickChannel = () => {
     const now = new Date().toISOString();
-    dispatch(setLastSeen({
-      lastSeen: now,
-    }));
+   setLastSeen(now);
 
-    dispatch(setSelectedChannel({
-      channelId: channel.id
-    }));
+  setSelectedChannel(channel.id);
 
     setIsUnseen(false);
     return navigate('/chat', { state: { channelId: channel.id } })

@@ -98,4 +98,4 @@ export const checkBlock = async (userId: string, id: string) => {
 
     const isBlocked = blocked.includes(id);
     return isBlocked;
-}
+}   

@@ -1,10 +1,11 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from 'react'
+import type{ Dispatch, FC, SetStateAction } from 'react'
+import { useState , useEffect } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { IoMdRemoveCircleOutline, IoMdAddCircleOutline } from 'react-icons/io';
 import { getUser } from '../../../services/userService';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../redux/store';
+import type { User } from '../../../utils/types';
+import { useAuthStore } from '../../../zustand/store/useAuthStore';
 
 type Props = {
     user?: User;
@@ -18,7 +19,7 @@ type Props = {
 }
 
 const UserBar: FC<Props> = ({ user, userId, isAdded, participants, setParticipants, search, admins, setAdmins }) => {
-    const currentUser = useSelector((state:RootState)=>state.auth.user);
+    const currentUser = useAuthStore((state)=>state.user);
     const [participant, setParticipant] = useState<User | null>(user ? user : null);
 
     useEffect(() => {

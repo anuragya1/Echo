@@ -1,18 +1,20 @@
 import moment from 'moment';
-import { FC, useState } from 'react'
+import type{ FC } from 'react'
+import { useState } from 'react';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { useSelector } from 'react-redux';
 
 import { updateMessage } from '../../../services/messageService';
-import { RootState } from '../../../redux/store';
+import type { message } from '../../../utils/types';
+import { useAuthStore } from '../../../zustand/store/useAuthStore';
 
 type Props = {
-    message: Message;
+    message: message;
 }
 
 const Message: FC<Props> = ({ message }) => {
-    const user = useSelector((state: RootState) => state.auth.user);
+    const user = useAuthStore((state)=>state.user)
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [deleted, setDeleted] = useState(false);
 
