@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { v4 } from 'uuid';
+import { v4 } from 'uuid'; // Note: You originally used v4 here, not v1
 
 const userSchema = new mongoose.Schema({
   id: {

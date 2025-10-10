@@ -20,19 +20,36 @@ const getMessage = async ({ id }) => {
 
 const getMessagesByChannel = async ({ id }) => {
   try {
+    console.log("incoming channel id in getMessagesByChannel:", id);
+    
+    
+    const count = await Message.countDocuments({ channelId: id });
+    console.log("Number of messages with channelId:", count);
+
     const messages = await Message.find({ channelId: id })
       .sort({ createdAt: 1 })
-      .populate('userId', '-password');
+      
+      // .populate('userId', '-password');
+    
+    console.log("Found messages:", messages);
+
+    if (!messages || messages.length === 0) {
+      return {
+        statusCode: '404',
+        message: 'No messages found for this channel.'
+      };
+    }
     
     return messages;
   } catch (error) {
+    console.error("Error in getMessagesByChannel:", error);
     return {
       statusCode: '404',
-      message: 'Messages not found.'
+      message: 'Messages not found.',
+      error: error.message
     };
   }
 };
-
 const addMessage = async ({ text, images, channelId, userId }) => {
   try {
     const message = await Message.create({

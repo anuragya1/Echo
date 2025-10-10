@@ -3,7 +3,6 @@ import type{ FC } from 'react'
 import { useState } from 'react';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { useSelector } from 'react-redux';
 
 import { updateMessage } from '../../../services/messageService';
 import type { message } from '../../../utils/types';

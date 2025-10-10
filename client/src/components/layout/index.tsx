@@ -22,7 +22,7 @@ const Layout: FC<Props> = ({ children }) => {
             <div className='grid grid-cols-1 md:grid-cols-5 xl:grid-cols-7 lg:w-[90%] lg:h-[90%] max-w-[1600px] w-full h-full md:max-h-[1000px] bg-neutral-800 rounded-md'>
                 <Sidebar />
                 <ContentArea>
-                {children}
+                {children} 
                 </ContentArea>
             </div>
         </div>

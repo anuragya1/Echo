@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
-
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-
 
 import PageInfo from '../../components/layout/ContentArea/PageInfo';
 import Spinner from '../../components/loading/Spinner';
@@ -13,19 +11,21 @@ import { getMessagesByChannel } from '../../services/messageService';
 import ChatInput from './components/ChatInput';
 import Message from './components/Message';
 import { useAuthStore } from '../../zustand/store/useAuthStore';
-import type { channel,message } from '../../utils/types';
-import { useChannelStore } from '../../zustand/store/useChannelStore';
+import type { channel, message } from '../../utils/types';
+
 
 const Chat = () => {
   const user = useAuthStore((state) => state.user);
   const location = useLocation();
-  const toggleRefresh = useChannelStore((state)=> state.toggleRefresh)
+
 
   const [channel, setChannel] = useState<channel>();
-  const [messages, setMessages] = useState<message[]>();
+  const [messages, setMessages] = useState<message[]>([]);
+
   const [isPending, setIsPending] = useState<boolean>(false);
   const ref = useChatScroll(messages);
 
+  // ✅ Fetch channel and messages
   useEffect(() => {
     if (!location.state.channelId) return;
     setIsPending(true);
@@ -33,13 +33,15 @@ const Chat = () => {
     const fetchChannel = async () => {
       const result = await getChannel(location.state.channelId);
       setChannel(result.channel);
-    }
-
-    const fetchMessages = async () => {
-      const result = await getMessagesByChannel(location.state.channelId);
-      setMessages(result);
-      setIsPending(false);
     };
+
+  const fetchMessages = async () => {
+  const result = await getMessagesByChannel(location.state.channelId);
+  console.log("Fetched messages:", result);
+  setMessages(result.messages || result);
+  setIsPending(false);
+};
+
 
     if (user?.id) {
       fetchMessages();
@@ -47,65 +49,79 @@ const Chat = () => {
     }
   }, [location.state.channelId, user?.id]);
 
+  // ✅ Socket event handling
   useEffect(() => {
-    socket.on('chat', (data) => {
-      if (data.channelId === channel?.id) setMessages((prev: any) => [...prev, data]);
-       toggleRefresh();
-    });
+    if (!channel?.id) return;
+
+    // ✅ Join the channel's socket room
+    socket.emit('join-group', channel.id);
+    console.log('✅ Joined socket room:', channel.id);
+
+    const handleChat = (data: any) => {
+      console.log('📩 Received chat event:', data);
+
+      if (
+        data.channelId === channel?.id ||
+        data.groupId === channel?.id ||
+        data.GroupId === channel?.id
+      ) {
+    setMessages((prev) => (Array.isArray(prev) ? [...prev, data] : [data]));
+      }
+    };
+
+    socket.on('chat', handleChat);
 
     return () => {
-      socket.off('chat');
-      socket.removeListener('chat')
-    }
+      socket.emit('leave-group', channel.id);
+      socket.off('chat', handleChat);
+      console.log('👋 Left socket room:', channel.id);
+    };
   }, [channel?.id]);
 
   return (
-    <section className='h-full relative overflow-hidden'>
+    <section className="h-full relative overflow-hidden">
       <PageInfo
         isChannel={true}
         name={
-          channel?.name ? channel?.name :
-            (
-              channel?.participants[0].username === user?.username
-                ?
-                channel?.participants[1].username
-                :
-                channel?.participants[0].username
-            )
+          channel?.name
+            ? channel?.name
+            : channel?.participants[0].username === user?.username
+            ? channel?.participants[1].username
+            : channel?.participants[0].username
         }
         participants={channel?.name ? channel?.participants : null}
         image={
           channel?.name
-            ?
-            channel.image
-            :
-            (
-              channel?.participants[0].username === user?.username
-                ?
-                channel?.participants[1].image
-                :
-                channel?.participants[0].image
-            )
+            ? channel.image
+            : channel?.participants[0].username === user?.username
+            ? channel?.participants[1].image
+            : channel?.participants[0].image
         }
       />
-      <div ref={ref} className='flex flex-col overflow-x-hidden overflow-y-auto pb-10 h-[85%] scroll-smooth'>
-        {
-          !isPending
-            ?
-            (messages && messages.length > 0)
-              ?
-              messages.map((message, index) => {
-                return <Message key={index} message={message} />
-              })
-              :
-              <p className='bg-cyan-600 p-3 m-2 rounded-md text-center'>There is no any messages yet.</p>
-            :
-            <Spinner size='lg' />
-        }
+
+      <div
+        ref={ref}
+        className="flex flex-col overflow-x-hidden overflow-y-auto pb-10 h-[85%] scroll-smooth"
+      >
+        {!isPending ? (
+          messages && messages.length > 0 ? (
+            messages.map((message, index) => (
+              <Message key={index} message={message} />
+            ))
+          ) : (
+            <p className="bg-cyan-600 p-3 m-2 rounded-md text-center">
+              There are no messages yet.
+            </p>
+          )
+        ) : (
+          <Spinner size="lg" />
+        )}
       </div>
+
+      {/* ✅ Optimistic updates handled inside ChatInput */}
       <ChatInput channelId={channel?.id!} setMessages={setMessages} />
     </section>
-  )
-}
+  );
+};
 
 export default Chat;

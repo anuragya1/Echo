@@ -1,8 +1,9 @@
-https://user-images.githubusercontent.com/102798814/233078629-7e05c3bc-4f77-405a-ba2a-1bb9735064ea.mp4
 
-# Full Stack Chat App
 
-This is a full stack chat application. You can chat privately or in a group and send images if you wish.
+# Echo
+
+Echo is a full stack realtime chat application. You can chat privately or in groups, share images, and manage your profile , all in a responsive dark-themed interface.
+while the core features are functional, testing and fine-tuning are still in progress.
 
 ## :bulb: Features
 
@@ -30,3 +31,5 @@ This is a full stack chat application. You can chat privately or in a group and 
 - [JS Cookie](https://www.npmjs.com/package/js-cookie) - Cookie
 - [Cloudinary](https://www.cloudinary.com/) - Image Storage
 
+# Status
+Echo is alive and functional — refinement, testing, and polish coming soon.

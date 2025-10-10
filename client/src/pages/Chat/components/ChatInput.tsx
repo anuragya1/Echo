@@ -3,7 +3,7 @@ import { useRef, useState} from 'react';
 import { ImAttachment } from 'react-icons/im';
 import { IoMdSend } from 'react-icons/io';
 import { GiCancel } from 'react-icons/gi';
-import { useSelector } from 'react-redux';
+
 
 import socket from '../../../lib/socket';
 

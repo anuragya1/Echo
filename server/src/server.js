@@ -28,13 +28,11 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log('🔌 User connected:', socket.id);
 
-  // Handle chat messages
   socket.on('chat', async (message) => {
     try {
       console.log('💬 Message received:', message);
       
-      // FIXED: Handle both field name formats
-      const groupId = message.groupId || message.channelId || message.GroupId;
+      const groupId = message.groupId || message.channelId;
       
       if (!groupId) {
         console.error('❌ No group ID provided');
@@ -42,7 +40,6 @@ io.on('connection', (socket) => {
         return;
       }
 
-      // Save message using existing service
       const result = await addMessage({
         text: message.text,
         images: message.images || [],
@@ -50,18 +47,15 @@ io.on('connection', (socket) => {
         userId: message.userId
       });
 
-      // FIXED: Broadcast to room AND emit back to sender
       if (result.statusCode === '201') {
         const broadcastMessage = {
           ...message,
-          id: result.data?.id,
+          id: result.data?.id, // Use id instead of id
           createdAt: result.data?.createdAt || new Date(),
-          GroupId: groupId,
-          groupId: groupId,
+          groupId,
           channelId: groupId
         };
 
-        // Broadcast to all clients in the room (including sender)
         io.to(groupId).emit('chat', broadcastMessage);
         console.log(`✅ Message broadcasted to room: ${groupId}`);
       } else {
@@ -74,21 +68,18 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Join group
   socket.on('join-group', (groupId) => {
     socket.join(groupId);
     console.log(`✅ Socket ${socket.id} joined group ${groupId}`);
     socket.emit('joined-group', { groupId });
   });
 
-  // Leave group
   socket.on('leave-group', (groupId) => {
     socket.leave(groupId);
     console.log(`👋 Socket ${socket.id} left group ${groupId}`);
     socket.emit('left-group', { groupId });
   });
 
-  // Typing indicator
   socket.on('typing', (data) => {
     socket.to(data.groupId).emit('user-typing', {
       userId: data.userId,
@@ -97,7 +88,6 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Stop typing
   socket.on('stop-typing', (data) => {
     socket.to(data.groupId).emit('user-stop-typing', {
       userId: data.userId,
@@ -105,7 +95,6 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Disconnect
   socket.on('disconnect', () => {
     console.log('🔴 User disconnected:', socket.id);
   });
@@ -114,7 +103,7 @@ io.on('connection', (socket) => {
 connectDB();
 
 app.use(cors({ 
-  origin:'*', 
+  origin: '*', 
   credentials: true 
 }));
 app.use(express.json());
@@ -125,7 +114,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/channels', groupRoutes);
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -134,7 +122,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Profile route
 app.get('/api/profile', jwtAuthMiddleware, async (req, res) => {
   try {
     res.json(req.user);
