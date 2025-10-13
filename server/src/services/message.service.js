@@ -20,18 +20,9 @@ const getMessage = async ({ id }) => {
 
 const getMessagesByChannel = async ({ id }) => {
   try {
-    console.log("incoming channel id in getMessagesByChannel:", id);
     
-    
-    const count = await Message.countDocuments({ channelId: id });
-    console.log("Number of messages with channelId:", count);
-
     const messages = await Message.find({ channelId: id })
       .sort({ createdAt: 1 })
-      
-      // .populate('userId', '-password');
-    
-    console.log("Found messages:", messages);
 
     if (!messages || messages.length === 0) {
       return {
