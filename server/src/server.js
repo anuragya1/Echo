@@ -19,7 +19,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:5173",       
-      "https://your-ngrok-id.ngrok-free.app"
+      "https://e05e27af664a.ngrok-free.app"
     ],
     methods: ['GET', 'POST'],
     credentials: true
