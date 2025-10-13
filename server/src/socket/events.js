@@ -2,10 +2,11 @@ import { addMessage } from "../services/message.service.js";
 
 export const setupSocketEvents = (io) => {
  
-    io.on('connections' , (socket)=>{
+    io.on('connection' , (socket)=>{
         console.log('user connected ', socket.id);
 
         socket.on('chat' , async(message) => {
+            
             try{
                 const groupId = message.groupId || message.channelId;
                 if(!groupId){
@@ -58,6 +59,7 @@ export const setupSocketEvents = (io) => {
         });
 
         socket.on('typing', (data) =>{
+            console.log(`user ${data.userId} is typing`)
             socket.to(data.groupId).emit('user-typing',{
                 userId: data.userId,
                 username: data.username,
