@@ -14,13 +14,14 @@ import { setupSocket } from './socket/index.js';
 
 const app = express();
 const server = http.createServer(app);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://e05e27af664a.ngrok-free.app"
+];
 
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:5173",       
-      "https://e05e27af664a.ngrok-free.app"
-    ],
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -29,7 +30,7 @@ const io = new Server(server, {
 connectDB();
 
 app.use(cors({ 
-  origin: '*', 
+  origin: allowedOrigins, 
   credentials: true 
 }));
 app.use(express.json());
