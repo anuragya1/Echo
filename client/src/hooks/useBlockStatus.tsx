@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 
 import { checkBlock, setBlocked } from '../services/userService';
 import { useAuthStore } from '../zustand/store/useAuthStore';

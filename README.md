@@ -10,6 +10,8 @@ while the core features are functional, testing and fine-tuning are still in pro
 ## :bulb: Features
 
 - Dark Theme
+- Typing indicator in private chat
+- Online status indicator in private chat
 - Responsive UI
 - JWT Authentication
 - Private or Group Chat
