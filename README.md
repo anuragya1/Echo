@@ -26,7 +26,7 @@ while the core features are functional, testing and fine-tuning are still in pro
 - [Node.js](https://nodejs.org/en) - Node.js Framework
 - [Socket.IO](https://socket.io/) - Web Socket
 - [TailwindCSS](https://tailwindcss.com/) - CSS Framework
-- [Mongodb](https://www.mongodb.com/) - BJSON Database
+- [Mongodb](https://www.mongodb.com/) - BSON Database
 - [Mongoose](https://mongoosejs.com/) - Database ORM
 - [React Icons](https://react-icons.github.io/react-icons/) - Icon Library
 - [Moment](https://momentjs.com/) - Date Formatting
