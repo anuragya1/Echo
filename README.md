@@ -2,7 +2,6 @@
 
 # Echo
 
- **Note:** This project started from [OriginalProject](https://github.com/srujan-nalam/Link-chat-application.git) as a base, but the backend, frontend, and features have been redesigned and implemented according to my vision.
  
 Echo is a full stack realtime chat application. You can chat privately or in groups, share images, and manage your profile , all in a responsive dark-themed interface.
 while the core features are functional, testing and fine-tuning are still in progress.
