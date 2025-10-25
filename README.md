@@ -1,13 +1,11 @@
-
-
 # Echo
 
- 
-Echo is a full stack realtime chat application. You can chat privately or in groups, share images, and manage your profile , all in a responsive dark-themed interface.
-while the core features are functional, testing and fine-tuning are still in progress.
+Echo is a full stack realtime chat application. You can chat privately or in groups, share images, and manage your profile, all in a responsive dark-themed interface.
+While the core features are functional, testing and fine-tuning are still in progress.
 
 ## Demo video
-<video src="https://youtu.be/o3MtsYJT0sg" controls></video>
+
+[![Echo Demo](https://img.youtube.com/vi/o3MtsYJT0sg/0.jpg)](https://youtu.be/o3MtsYJT0sg)
 
 ## :bulb: Features
 
@@ -23,7 +21,7 @@ while the core features are functional, testing and fine-tuning are still in pro
 
 ## :hammer_and_wrench: Built With
 
-- [Original link]() - Main Language
+- [JavaScript]() - Main Language
 - [React](https://reactjs.org/) - JavaScript library for UI
 - [Zustand](https://zustand.docs.pmnd.rs/) - Global State Management
 - [Node.js](https://nodejs.org/en) - Node.js Framework
