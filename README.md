@@ -6,6 +6,9 @@
 Echo is a full stack realtime chat application. You can chat privately or in groups, share images, and manage your profile , all in a responsive dark-themed interface.
 while the core features are functional, testing and fine-tuning are still in progress.
 
+## Demo video
+<video src="https://youtu.be/o3MtsYJT0sg" controls></video>
+
 ## :bulb: Features
 
 - Dark Theme
