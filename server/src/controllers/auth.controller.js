@@ -22,3 +22,18 @@ export const register = async (req, res) => {
     }
   }
 };
+
+export const refresh = async (req, res) => {
+  try {
+    const { refresh_token } = req.body;
+
+    if (!refresh_token) {
+      return res.status(400).json({ message: 'refresh_token is required' });
+    }
+
+    const tokenData = await authService.refresh(refresh_token);
+    res.status(200).json(tokenData);
+  } catch (error) {
+    res.status(401).json({ message: 'Invalid refresh token' });
+  }
+};

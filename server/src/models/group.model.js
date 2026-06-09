@@ -19,10 +19,6 @@ const groupSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  messages: {
-    type: [String],
-    default: [],
-  },
   name: {
     type: String,
     required: false,
@@ -35,5 +31,8 @@ const groupSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+groupSchema.index({ participants: 1 });
+groupSchema.index({ admins: 1 });
 
 export const Group = mongoose.model('Group', groupSchema);

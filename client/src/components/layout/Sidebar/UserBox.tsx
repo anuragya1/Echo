@@ -11,7 +11,12 @@ import { MdAddToPhotos } from 'react-icons/md';
 import { getUser } from '../../../services/userService';
 import type { User } from '../../../utils/types';
 import { useAuthStore } from '../../../zustand/store/useAuthStore';
-const UserBox = () => {
+
+type Props = {
+  onNavigate?: () => void;
+};
+
+const UserBox = ({ onNavigate }: Props) => {
   const navigate = useNavigate();
 
   const user = useAuthStore((state)=> state.user)
@@ -30,7 +35,10 @@ const UserBox = () => {
   return (
     <div className='p-3 flex items-center relative h-22'>
       <LazyLoadImage
-        onClick={() => navigate('/profile', { state: { userId: user?.id } })}
+        onClick={() => {
+          onNavigate?.();
+          navigate('/profile', { state: { userId: user?.id } });
+        }}
         className='w-16 h-16 object-cover rounded-full cursor-pointer'
         src={loggedUser?.image}
         alt='user-pp'
@@ -42,21 +50,30 @@ const UserBox = () => {
         <div className='absolute group-hover:block hidden text-white w-full lg:max-w-[220px] md:w-auto bg-neutral-800 border border-neutral-900 shadow-md rounded-md z-50 right-0 '>
           <button
             className='w-full hover:bg-neutral-700 duration-200 py-3 px-8 flex items-center'
-            onClick={() => navigate('/create')}
+            onClick={() => {
+              onNavigate?.();
+              navigate('/create');
+            }}
           >
             <MdAddToPhotos className='mr-3' />
             Create Channel
           </button>
           <button
             className='w-full hover:bg-neutral-700 duration-200 p-3 px-8 flex items-center'
-            onClick={() => navigate('/addfriend')}
+            onClick={() => {
+              onNavigate?.();
+              navigate('/addfriend');
+            }}
           >
             <IoPersonAddSharp className='mr-3' />
             Add Friend
           </button>
           <button
             className='w-full hover:bg-neutral-700 duration-200 p-3 px-8 flex items-center'
-            onClick={() => navigate('/profile', { state: { userId: user?.id } })}
+            onClick={() => {
+              onNavigate?.();
+              navigate('/profile', { state: { userId: user?.id } });
+            }}
           >
             <FaUserFriends className='mr-3' />
             Friends
@@ -64,6 +81,7 @@ const UserBox = () => {
           <button
             className='w-full hover:bg-neutral-700 duration-200 p-3 px-8 flex items-center'
             onClick={() => {
+             onNavigate?.();
              logout();
             } }
           >

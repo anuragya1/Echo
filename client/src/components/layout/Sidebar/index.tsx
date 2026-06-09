@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { getChannelsByUser } from '../../../services/channelService';
 import ChannelBox from './ChannelBox';
 import Searchbar from './Searchbar';
@@ -9,8 +8,12 @@ import type { channel, message } from '../../../utils/types';
 import { useAuthStore } from '../../../zustand/store/useAuthStore';
 import { useChannelStore } from '../../../zustand/store/useChannelStore';
 
-const Sidebar = () => {
-    const location = useLocation();
+type Props = {
+    isOpen?: boolean;
+    onClose?: () => void;
+};
+
+const Sidebar = ({ isOpen = false, onClose }: Props) => {
     const user = useAuthStore((state) => state.user);
     const refresh = useChannelStore((state) => state.refresh);
     const [channels, setChannels] = useState<channel[]>([]);
@@ -20,13 +23,14 @@ const Sidebar = () => {
 
     useEffect(() => {
         const fetchChannels = async () => {
-            if (!user?.id) return; // Guard clause
+            if (!user?.id) {
+                setIsPending(false);
+                return;
+            }
             
             try {
                 setIsPending(true);
                 const result = await getChannelsByUser(user.id);
-                
-                console.log('Fetched result:', result); // Debug log
                 
                 // Ensure we have arrays
                 setChannels(Array.isArray(result.channels) ? result.channels : []);
@@ -44,14 +48,17 @@ const Sidebar = () => {
     }, [user?.id, refresh]);
 
     return (
-        <aside className={
-            `bg-neutral-900 border-r md:block border-neutral-700 xl:col-span-2 md:col-span-2 min-h-screen md:min-h-fit overflow-hidden  
-                ${location.pathname === '/' ? 'block' : 'hidden'} 
+        <aside
+            className={`
+                fixed md:static inset-y-0 left-0 z-50 w-[86vw] max-w-[360px] md:w-auto md:max-w-none
+                bg-neutral-900 border-r border-neutral-700 xl:col-span-2 md:col-span-2 h-full min-h-0 overflow-hidden
+                transform transition-transform duration-200 md:translate-x-0
+                ${isOpen ? 'translate-x-0' : '-translate-x-full'}
             `}
         >
-            <UserBox />
+            <UserBox onNavigate={onClose} />
             <Searchbar setSearch={setSearch} />
-            <div className='overflow-x-hidden overflow-y-auto max-h-[865px] pb-16'>
+            <div className='overflow-x-hidden overflow-y-auto h-[calc(100%-8.75rem)] pb-16'>
                 {isPending ? (
                     <div className='mt-10'>
                         <Spinner size='sm' />
@@ -68,6 +75,7 @@ const Sidebar = () => {
                                 userId={user?.id!}
                                 lastMessage={lastMessage}
                                 search={search}
+                                onNavigate={onClose}
                             />
                         );
                     })

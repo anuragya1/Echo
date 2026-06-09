@@ -1,17 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import Logo from '../../assets/brand-logo.png';
 import FormSuccess from '../../components/loading/FormSuccess';
 import Divider from './components/Divider';
 import RegisterForm from './components/RegisterForm';
+import { useAuthStore } from '../../zustand/store/useAuthStore';
 
 const Register = () => {
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
   const [isFormOpen, setIsFormOpen] = useState<boolean>(true);
 
+  useEffect(() => {
+    if (user?.id) navigate('/');
+  }, [user?.id, navigate]);
+
   return (
-    <div className='flex justify-center items-center w-full h-[100vh]'>
+    <div className='flex justify-center items-center w-full min-h-[100dvh] p-3'>
       <div className='py-10 md:py-5 w-full h-full sm:h-auto sm:w-[400px] bg-neutral-800 shadow-lg rounded-md text-white'>
         {
           isFormOpen

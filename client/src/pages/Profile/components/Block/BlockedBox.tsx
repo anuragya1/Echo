@@ -43,7 +43,7 @@ const BlockedBox: FC<Props> = ({ blocked }) => {
 
     return (
         <>
-            <div className="flex p-3 items-center">
+            <div className="flex flex-wrap gap-3 p-3 items-center">
                 <LazyLoadImage
                     onClick={() => navigate('/profile', { state: { userId: blocked.id } })}
                     src={blocked.image}
@@ -53,10 +53,10 @@ const BlockedBox: FC<Props> = ({ blocked }) => {
                 />
                 <p
                     onClick={() => navigate('/profile', { state: { userId: blocked.id } })}
-                    className="ml-3 text-xl font-semibold cursor-pointer">
+                    className="min-w-0 flex-1 text-xl font-semibold cursor-pointer truncate">
                     {blocked.username}
                 </p>
-                <div className="w-1/2 flex ml-auto">
+                <div className="w-full sm:w-auto sm:min-w-[180px] flex flex-wrap ml-auto">
                     {
                         isBlocked
                             ?

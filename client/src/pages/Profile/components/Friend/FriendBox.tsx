@@ -4,8 +4,6 @@ import { BiBlock, BiMessageDots } from "react-icons/bi";
 import { IoPersonRemoveSharp, IoPersonAddSharp } from "react-icons/io5";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 
-import { useDispatch } from "react-redux";
-
 import IconButton from "../../../../components/buttons/IconButton";
 import useBlockStatus from "../../../../hooks/useBlockStatus";
 import useFriendStatus from "../../../../hooks/useFriendStatus";
@@ -95,7 +93,7 @@ const FriendBox: FC<Props> = ({ friend }) => {
 
     return (
         <>
-            <div className="flex p-3 items-center">
+            <div className="flex flex-wrap gap-3 p-3 items-center">
                 <LazyLoadImage
                     onClick={() => navigate('/profile', { state: { userId: friend.id } })}
                     src={friend.image}
@@ -105,11 +103,11 @@ const FriendBox: FC<Props> = ({ friend }) => {
                 />
                 <p
                     onClick={() => navigate('/profile', { state: { userId: friend.id } })}
-                    className="ml-3 text-xl font-semibold cursor-pointer"
+                    className="min-w-0 flex-1 text-xl font-semibold cursor-pointer truncate"
                 >
                     {friend.username}
                 </p>
-                <div className="w-1/2 flex ml-auto">
+                <div className="w-full sm:w-auto sm:min-w-[260px] flex flex-wrap ml-auto">
                     {
                         user?.id !== friend.id
                         &&

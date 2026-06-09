@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import type { Dispatch, FC, SetStateAction } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MdMail } from 'react-icons/md';
 import { HiUser } from 'react-icons/hi';
@@ -19,6 +20,7 @@ type Props = {
 
 const RegisterForm: FC<Props> = ({ setIsFormOpen }) => {
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -28,7 +30,9 @@ const RegisterForm: FC<Props> = ({ setIsFormOpen }) => {
   } = useForm();
 
   const onSubmit = async (data: any) => {
+    setIsSubmitting(true);
     const { statusCode, message } = await createAccount(data);
+    setIsSubmitting(false);
 
     if (statusCode === '201') {
       setIsFormOpen(false);
@@ -36,6 +40,7 @@ const RegisterForm: FC<Props> = ({ setIsFormOpen }) => {
       setTimeout(() => {
         return navigate('/login');
       }, 2000);
+      return;
     }
 
     reset();
@@ -82,8 +87,8 @@ const RegisterForm: FC<Props> = ({ setIsFormOpen }) => {
           ...register('username', {
             required: 'username is required.',
             minLength: {
-              value: 3,
-              message: 'username must be min 3 characters.'
+              value: 5,
+              message: 'username must be min 5 characters.'
             },
             maxLength: {
               value: 20,
@@ -101,8 +106,8 @@ const RegisterForm: FC<Props> = ({ setIsFormOpen }) => {
           ...register('password', {
             required: 'password is required',
             minLength: {
-              value: 5,
-              message: 'password must be min 5 characters.'
+              value: 8,
+              message: 'password must be min 8 characters.'
             },
             maxLength: {
               value: 20,
@@ -115,8 +120,9 @@ const RegisterForm: FC<Props> = ({ setIsFormOpen }) => {
         <Terms />
         <BasicButton
           type='submit'
+          disabled={isSubmitting}
         >
-          Create Account
+          {isSubmitting ? 'Creating...' : 'Create Account'}
         </BasicButton>
       </div>
       <Toaster />

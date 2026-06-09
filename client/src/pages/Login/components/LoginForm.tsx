@@ -1,6 +1,7 @@
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import type { Dispatch, FC, SetStateAction } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast, Toaster } from "react-hot-toast";
 import { AiFillLock } from "react-icons/ai";
@@ -22,6 +23,7 @@ const LoginForm: FC<Props> = ({ setIsFormOpen }) => {
 
 
   const setUser = useAuthStore((state) => state.setUser);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -31,13 +33,16 @@ const LoginForm: FC<Props> = ({ setIsFormOpen }) => {
   } = useForm();
 
   const onSubmit = async (data: any) => {
+    setIsSubmitting(true);
     const result = await logIn({ email: data.email, password: data.password });
+    setIsSubmitting(false);
 
     if (result.statusCode === "200") {
       setIsFormOpen(false);
 
       const { id, username, image }: any = jwtDecode(result.access_token);
       Cookies.set("access_token", result.access_token, { expires: 3 });
+      Cookies.set("refresh_token", result.refresh_token, { expires: 30 });
       Cookies.set("last_user", id);
 
     
@@ -101,8 +106,9 @@ const LoginForm: FC<Props> = ({ setIsFormOpen }) => {
       <div className='w-[90%] md:w-[80%] mx-auto'>
         <BasicButton
           type='submit'
+          disabled={isSubmitting}
         >
-          Login
+          {isSubmitting ? 'Logging in...' : 'Login'}
         </BasicButton>
       </div>
       <Toaster />

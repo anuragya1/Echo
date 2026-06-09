@@ -1,114 +1,156 @@
+import { Group } from "../models/group.model.js";
 import { addMessage } from "../services/message.service.js";
+
+const isGroupMember = async (groupId, userId) => {
+  const group = await Group.findOne({ id: groupId, participants: userId }).select('id');
+  return Boolean(group);
+};
 
 export const setupSocketEvents = (io) => {
   const onlineUsers = new Map();
 
   io.on('connection', (socket) => {
-    console.log('user connected ', socket.id);
+    const userId = socket.user.id;
+    const username = socket.user.username;
+    const sockets = onlineUsers.get(userId) || new Set();
+    const wasOffline = sockets.size === 0;
 
-    socket.on('user-online', (data) => {
-      const { userId } = data;
-      onlineUsers.set(userId, socket.id);
-      console.log('User is online:', userId);
+    sockets.add(socket.id);
+    onlineUsers.set(userId, sockets);
 
+    if (wasOffline) {
       socket.broadcast.emit('user-status-change', {
+        userId,
+        status: 'online'
+      });
+    }
+
+    socket.on('user-online', () => {
+      socket.emit('user-status-change', {
         userId,
         status: 'online'
       });
     });
 
-    socket.on('check-user-status', (data) => {
-      const { userId } = data;
-      const isOnline = onlineUsers.has(userId);
-      console.log('Checking status for:', userId, '- Online:', isOnline);
+    socket.on('check-user-status', async (data) => {
+      if (data.channelId && !(await isGroupMember(data.channelId, userId))) {
+        socket.emit('error', { message: 'You are not allowed to check this room' });
+        return;
+      }
+
+      if (data.channelId && !(await isGroupMember(data.channelId, data.userId))) {
+        socket.emit('user-status-response', {
+          userId: data.userId,
+          status: 'offline'
+        });
+        return;
+      }
 
       socket.emit('user-status-response', {
-        userId,
-        status: isOnline ? 'online' : 'offline'
+        userId: data.userId,
+        status: onlineUsers.has(data.userId) ? 'online' : 'offline'
       });
     });
 
-    socket.on('chat', async (message) => {
+    socket.on('chat', async (message, acknowledge) => {
+      const reply = (payload) => {
+        if (typeof acknowledge === 'function') {
+          acknowledge(payload);
+        }
+      };
+
       try {
         const groupId = message.groupId || message.channelId;
         if (!groupId) {
           socket.emit('error', { message: 'GroupId is required' });
+          reply({ ok: false, message: 'GroupId is required' });
           return;
         }
+
+        if (!(await isGroupMember(groupId, userId))) {
+          socket.emit('error', { message: 'You are not allowed to message this room' });
+          reply({ ok: false, message: 'You are not allowed to message this room' });
+          return;
+        }
+
         const result = await addMessage({
           text: message.text,
           images: message.images || [],
           channelId: groupId,
-          userId: message.userId
+          userId
         });
 
-        if (result.statusCode === '201') {
-          const broadcastMessage = {
-            ...message,
-            id: result.data?.id,
-            createdAt: result.data?.createdAt || new Date(),
-            groupId,
-            channelId: groupId
-          };
-          io.to(groupId).emit('chat', broadcastMessage);
-          console.log('Message broadcasted to room: ', groupId);
-        } else {
-          console.error('Failed to save message: ', result);
-          socket.emit('error', { message: 'Failed to save message' });
+        if (result.statusCode !== '201') {
+          socket.emit('error', { message: result.message || 'Failed to save message' });
+          reply({ ok: false, message: result.message || 'Failed to save message' });
+          return;
         }
+
+        const broadcastMessage = {
+          ...message,
+          id: result.data?.id,
+          userId,
+          user: { username },
+          createdAt: result.data?.createdAt || new Date(),
+          groupId,
+          channelId: groupId
+        };
+
+        io.to(groupId).emit('chat', broadcastMessage);
+        reply({ ok: true, message: broadcastMessage });
       } catch (error) {
-        console.error('Error handling chat: ', error);
         socket.emit('error', {
           message: 'Failed to save message',
           error: error.message
         });
+        reply({ ok: false, message: 'Failed to save message' });
       }
     });
 
-    socket.on('join-group', (groupId) => {
+    socket.on('join-group', async (groupId) => {
+      if (!(await isGroupMember(groupId, userId))) {
+        socket.emit('error', { message: 'You are not allowed to join this room' });
+        return;
+      }
+
       socket.join(groupId);
-      console.log(`Socket ${socket.id} joined group ${groupId}`);
       socket.emit('joined-group', { groupId });
     });
 
     socket.on('leave-group', (groupId) => {
       socket.leave(groupId);
-      console.log(`Socket ${socket.id} left group ${groupId}`);
       socket.emit('left-group', { groupId });
     });
 
-    socket.on('typing', (data) => {
-      console.log(`user ${data.userId} is typing`);
+    socket.on('typing', async (data) => {
+      if (!(await isGroupMember(data.groupId, userId))) return;
+
       socket.to(data.groupId).emit('user-typing', {
-        userId: data.userId,
-        username: data.username,
+        userId,
+        username,
         groupId: data.groupId
       });
     });
 
-    socket.on('stop-typing', (data) => {
+    socket.on('stop-typing', async (data) => {
+      if (!(await isGroupMember(data.groupId, userId))) return;
+
       socket.to(data.groupId).emit('user-stop-typing', {
-        userId: data.userId,
+        userId,
         groupId: data.groupId
       });
     });
 
     socket.on('disconnect', () => {
-      console.log('User disconnected:', socket.id);
+      const sockets = onlineUsers.get(userId);
+      if (!sockets) return;
 
-      let disconnectedUserId = null;
-      for (const [userId, socketId] of onlineUsers.entries()) {
-        if (socketId === socket.id) {
-          disconnectedUserId = userId;
-          onlineUsers.delete(userId);
-          console.log('User went offline:', userId);
-          break;
-        }
-      }
+      sockets.delete(socket.id);
 
-      if (disconnectedUserId) {
+      if (sockets.size === 0) {
+        onlineUsers.delete(userId);
         socket.broadcast.emit('user-status-change', {
-          userId: disconnectedUserId,
+          userId,
           status: 'offline'
         });
       }

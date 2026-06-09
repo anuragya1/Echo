@@ -49,18 +49,18 @@ const Info: FC<Props> = ({ details }) => {
     }
 
     return (
-        <div className="w-full flex justify-center py-1 xl:py-10">
-            <div className="flex xl:flex-row flex-col my-5 p-3 max-w-[800px]">
+        <div className="w-full flex justify-center py-1 xl:py-10 px-3">
+            <div className="flex xl:flex-row flex-col my-5 p-3 max-w-[800px] w-full">
                 <LazyLoadImage
                     src={details?.image}
                     alt='user-pp'
                     effect="blur"
                     className="w-52 h-52 object-cover rounded-full mx-auto mb-5 xl:mb-0"
                 />
-                <div className="max-w-[400px] md:pl-5">
+                <div className="max-w-[400px] md:pl-5 w-full">
                     <h1 className="text-2xl font-semibold my-2 xl:text-start text-center">{details?.username}</h1>
-                    <p className="min-h-[100px]">{details?.about ? details.about : 'No Information.'}</p>
-                    <div className="flex">
+                    <p className="min-h-[100px] break-words text-neutral-300">{details?.about ? details.about : 'No Information.'}</p>
+                    <div className="flex flex-wrap gap-2">
                         {
                             user?.id === details?.id
                                 ?

@@ -1,8 +1,7 @@
 import type{ Dispatch, FC, SetStateAction } from 'react'
-import {useRef } from 'react'
+import {useRef, useState } from 'react'
 import { toast, Toaster } from 'react-hot-toast';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { useDispatch } from 'react-redux';
 
 import BasicButton from '../../../components/buttons/BasicButton';
 import { uploadUserImage } from '../../../services/userService';
@@ -25,29 +24,12 @@ type Props = {
 const EditForm: FC<Props> = ({ channel, participants, setParticipants, admins, setAdmins, image, setImage }) => {
      const toggleRefresh = useChannelStore((state)=>state.toggleRefresh)
     const inputRef = useRef<any>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
-        var imageUrl = image;
-
-        if (image !== channel.image) {
-            imageUrl = await uploadUserImage(e.target.image.files[0]);
-        }
-
-        if (!e.target.image.files || !e.target.name.value) return;
-
-        const { statusCode, message } = await updateChannel(channel.id, {
-            name: e.target.name.value,
-            participants,
-            admins,
-            description: e.target.description.value,
-            image: imageUrl
-        });
-
-        if (statusCode === '200') {
-            toggleRefresh();
-
-            return toast.success(message, {
+        if (!e.target.name.value.trim()) {
+            return toast.error('Channel name is required.', {
                 duration: 3000,
                 position: 'bottom-center',
                 style: {
@@ -57,14 +39,56 @@ const EditForm: FC<Props> = ({ channel, participants, setParticipants, admins, s
             });
         }
 
-        toast.error(message, {
-            duration: 3000,
-            position: 'bottom-center',
-            style: {
-                backgroundColor: '#353535',
-                color: '#fff'
+        var imageUrl = image;
+
+        try {
+            setIsSaving(true);
+
+            if (image !== channel.image && e.target.image.files[0]) {
+                imageUrl = await uploadUserImage(e.target.image.files[0]);
             }
-        });
+
+            const { statusCode, message } = await updateChannel(channel.id, {
+                name: e.target.name.value,
+                participants,
+                admins,
+                description: e.target.description.value,
+                image: imageUrl
+            });
+
+            if (statusCode === '200') {
+                toggleRefresh();
+
+                return toast.success(message, {
+                    duration: 3000,
+                    position: 'bottom-center',
+                    style: {
+                        backgroundColor: '#353535',
+                        color: '#fff'
+                    }
+                });
+            }
+
+            toast.error(message, {
+                duration: 3000,
+                position: 'bottom-center',
+                style: {
+                    backgroundColor: '#353535',
+                    color: '#fff'
+                }
+            });
+        } catch {
+            toast.error('Unable to save channel. Please try again.', {
+                duration: 3000,
+                position: 'bottom-center',
+                style: {
+                    backgroundColor: '#353535',
+                    color: '#fff'
+                }
+            });
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     const handleClick = () => {
@@ -84,7 +108,7 @@ const EditForm: FC<Props> = ({ channel, participants, setParticipants, admins, s
     }
 
     return (
-        <form action='POST' className='max-w-[800px] px-3 mx-auto overflow-y-auto overflow-x-hidden' onSubmit={handleSubmit}>
+        <form action='POST' className='max-w-[800px] px-3 mx-auto overflow-y-auto overflow-x-hidden pb-8' onSubmit={handleSubmit}>
             <div className='flex items-center justify-center w-full lg:flex-row flex-col py-5 border-b border-neutral-600'>
                 <LazyLoadImage
                     className={`rounded-full w-52 h-52 object-cover cursor-pointer duration-200 ${!image && 'border-2 border-neutral-600 hover:bg-neutral-700'}`}
@@ -93,7 +117,7 @@ const EditForm: FC<Props> = ({ channel, participants, setParticipants, admins, s
                     onClick={handleClick}
                 />
                 <input onChange={handleChange} ref={inputRef} type="file" hidden name="image" accept='image/png, image/jpeg' />
-                <div className='md:pl-3 lg:pl-5 md:w-[350px]'>
+                <div className='md:pl-3 lg:pl-5 w-full md:w-[350px]'>
                     <div className='flex flex-col mb-3'>
                         <label htmlFor="name">Name</label>
                         <input
@@ -127,7 +151,7 @@ const EditForm: FC<Props> = ({ channel, participants, setParticipants, admins, s
                 setAdmins={setAdmins}
             />
             <div className='p-3 lg:p-0'>
-                <BasicButton type='submit' >Save</BasicButton>
+                <BasicButton type='submit' disabled={isSaving}>{isSaving ? 'Saving...' : 'Save'}</BasicButton>
             </div>
             <Toaster />
         </form>

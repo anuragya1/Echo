@@ -21,33 +21,13 @@ const ChannelForm = () => {
     const [image, setImage] = useState<any>(null);
     const [participants, setParticipants] = useState<string[]>([user?.id!]);
     const [admins, setAdmins] = useState<string[]>([user?.id!]);
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
 
-        var secureUrl = NO_AVATAR_CHANNEL;
-
-        if (e.target.image.files.length === 1) {
-            console.log(e.target.image.files)
-            secureUrl = await uploadUserImage(e.target.image.files[0]);
-        }
-
-        const { statusCode, message } = await createChannel({
-            name: e.target.name.value,
-            participants,
-            admins,
-            description: e.target.description.value,
-            image: secureUrl
-        });
-
-        if (statusCode === '201') {
-            setParticipants([user?.id!]);
-            setAdmins([user?.id!]);
-            setImage(null);
-            e.target.reset();
-           toggleRefresh()
-
-            return toast.success(message, {
+        if (!e.target.name.value.trim()) {
+            return toast.error('Channel name is required.', {
                 duration: 3000,
                 position: 'bottom-center',
                 style: {
@@ -57,14 +37,60 @@ const ChannelForm = () => {
             });
         }
 
-        toast.error(message, {
-            duration: 3000,
-            position: 'bottom-center',
-            style: {
-                backgroundColor: '#353535',
-                color: '#fff'
+        var secureUrl = NO_AVATAR_CHANNEL;
+
+        try {
+            setIsSaving(true);
+
+            if (e.target.image.files.length === 1) {
+                secureUrl = await uploadUserImage(e.target.image.files[0]);
             }
-        });
+
+            const { statusCode, message } = await createChannel({
+                name: e.target.name.value,
+                participants,
+                admins,
+                description: e.target.description.value,
+                image: secureUrl
+            });
+
+            if (statusCode === '201') {
+                setParticipants([user?.id!]);
+                setAdmins([user?.id!]);
+                setImage(null);
+                e.target.reset();
+               toggleRefresh()
+
+                return toast.success(message, {
+                    duration: 3000,
+                    position: 'bottom-center',
+                    style: {
+                        backgroundColor: '#353535',
+                        color: '#fff'
+                    }
+                });
+            }
+
+            toast.error(message, {
+                duration: 3000,
+                position: 'bottom-center',
+                style: {
+                    backgroundColor: '#353535',
+                    color: '#fff'
+                }
+            });
+        } catch {
+            toast.error('Unable to create channel. Please try again.', {
+                duration: 3000,
+                position: 'bottom-center',
+                style: {
+                    backgroundColor: '#353535',
+                    color: '#fff'
+                }
+            });
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     const handleClick = () => {
@@ -84,7 +110,7 @@ const ChannelForm = () => {
     }
 
     return (
-        <form action='POST' className='max-w-[800px] px-3 mx-auto overflow-y-auto overflow-x-hidden' onSubmit={handleSubmit}>
+        <form action='POST' className='max-w-[800px] px-3 mx-auto overflow-y-auto overflow-x-hidden pb-8' onSubmit={handleSubmit}>
             <div className='flex items-center justify-center w-full lg:flex-row flex-col py-5 border-b border-neutral-600'>
                 <LazyLoadImage
                     className={`rounded-full w-52 h-52 object-cover cursor-pointer duration-200 ${!image && 'border-2 border-neutral-600 hover:bg-neutral-700'}`}
@@ -93,7 +119,7 @@ const ChannelForm = () => {
                     onClick={handleClick}
                 />
                 <input onChange={handleChange} ref={inputRef} type="file" hidden name="image" accept='image/png, image/jpeg' />
-                <div className='md:pl-3 lg:pl-5 md:w-[350px]'>
+                <div className='md:pl-3 lg:pl-5 w-full md:w-[350px]'>
                     <div className='flex flex-col mb-3'>
                         <label htmlFor="name">Name</label>
                         <input
@@ -120,7 +146,7 @@ const ChannelForm = () => {
             </div>
             <Participants participants={participants} setParticipants={setParticipants} admins={admins} setAdmins={setAdmins} />
             <div className='p-3 lg:p-0'>
-                <BasicButton type='submit' >Create Channel</BasicButton>
+                <BasicButton type='submit' disabled={isSaving}>{isSaving ? 'Creating...' : 'Create Channel'}</BasicButton>
             </div>
             <Toaster />
         </form>

@@ -20,23 +20,23 @@ const Chat = () => {
   const [channel, setChannel] = useState<channel>();
   const [messages, setMessages] = useState<message[]>([]);
   const [isPending, setIsPending] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const [isSocketReady, setIsSocketReady] = useState(socket.connected);
   const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
-  const [typingUsername, setTypingUsername] = useState<string>('');
   const [isOtherUserOnline, setIsOtherUserOnline] = useState(false);
   const [otherUserId, setOtherUserId] = useState<string>('');
+  const [socketError, setSocketError] = useState('');
 
   const ref = useChatScroll(messages);
 
   // Monitor socket connection status
   useEffect(() => {
     const handleConnect = () => {
-      console.log('Socket connected in Chat');
       setIsSocketReady(true);
+      setSocketError('');
     };
 
     const handleDisconnect = () => {
-      console.log(' Socket disconnected in Chat');
       setIsSocketReady(false);
     };
 
@@ -55,25 +55,33 @@ const Chat = () => {
   useEffect(() => {
     if (!location.state?.channelId) return;
     setIsPending(true);
+    setError('');
 
     const fetchChannel = async () => {
-      const result = await getChannel(location.state.channelId);
-      setChannel(result.channel);
+      try {
+        const result = await getChannel(location.state.channelId);
+        setChannel(result.channel);
 
-      if (result.channel.participants.length === 2 && !result.channel.name) {
-        const otherUser = result.channel.participants[0].id === user?.id
-          ? result.channel.participants[1]
-          : result.channel.participants[0];
-        setOtherUserId(otherUser.id);
-        console.log('Other user ID:', otherUser.id);
+        if (result.channel.participants.length === 2 && !result.channel.name) {
+          const otherUser = result.channel.participants[0].id === user?.id
+            ? result.channel.participants[1]
+            : result.channel.participants[0];
+          setOtherUserId(otherUser.id);
+        }
+      } catch {
+        setError('Unable to load this channel.');
       }
     };
 
     const fetchMessages = async () => {
-      const result = await getMessagesByChannel(location.state.channelId);
-      console.log("Fetched messages:", result);
-      setMessages(result.messages || result);
-      setIsPending(false);
+      try {
+        const result = await getMessagesByChannel(location.state.channelId);
+        setMessages(result.messages || result);
+      } catch {
+        setError('Unable to load messages. Please try again.');
+      } finally {
+        setIsPending(false);
+      }
     };
 
     if (user?.id) {
@@ -85,73 +93,57 @@ const Chat = () => {
   
   useEffect(() => {
     if (!channel?.id || !isSocketReady) {
-      console.log('Waiting for socket or channel...', { channelId: channel?.id, isSocketReady });
       return;
     }
 
-    console.log('Attempting to join room:', channel.id);
     socket.emit('join-group', channel.id);
 
     if (otherUserId) {
-      console.log('Checking status for user:', otherUserId);
       socket.emit('check-user-status', {
         userId: otherUserId,
         channelId: channel.id
       });
     }
 
-    const handleJoinedGroup = (data: any) => {
-      console.log('Successfully joined room:', data.groupId);
-    };
+    const handleJoinedGroup = () => {};
 
     const handleChat = (data: any) => { 
-      console.log('Received chat event:', data);
-
       if (
         data.channelId === channel?.id ||
         data.groupId === channel?.id ||
         data.GroupId === channel?.id
       ) {
         setIsOtherUserTyping(false);
-        setTypingUsername('');
         setMessages((prev) => (Array.isArray(prev) ? [...prev, data] : [data]));
       }
     };
 
     const handleUserTyping = (data: any) => {
-      console.log(' User typing event received:', data);
-
       if (data.groupId === channel.id && data.userId !== user?.id) {
-        console.log('Showing typing for:', data.username);
         setIsOtherUserTyping(true);
-        setTypingUsername(data.username);
       }
     };
 
     const handleUserStopTyping = (data: any) => {
-      console.log(' User stopped typing event received:', data);
-
       if (data.groupId === channel.id && data.userId !== user?.id) {
-        console.log('Hiding typing indicator');
         setIsOtherUserTyping(false);
-        setTypingUsername('');
       }
     };
 
     const handleUserStatusResponse = (data: any) => {
-      console.log(' User status response:', data);
       if (data.userId === otherUserId) {
         setIsOtherUserOnline(data.status === 'online');
-        console.log(' Other user online status:', data.status === 'online');
       }
     };
 
     const handleUserStatusChange = (data: any) => {
-      console.log('User status changed:', data);
       if (data.userId === otherUserId) {
         setIsOtherUserOnline(data.status === 'online');
-        console.log('Updated online status to:', data.status === 'online');
       }
+    };
+
+    const handleSocketError = (data: any) => {
+      setSocketError(data?.message || 'Socket connection failed.');
     };
 
     socket.on('joined-group', handleJoinedGroup);
@@ -160,9 +152,9 @@ const Chat = () => {
     socket.on('user-stop-typing', handleUserStopTyping);
     socket.on('user-status-response', handleUserStatusResponse);
     socket.on('user-status-change', handleUserStatusChange);
+    socket.on('error', handleSocketError);
 
     return () => {
-      console.log('Cleaning up socket listeners for:', channel.id);
       socket.emit('leave-group', channel.id);
       socket.off('joined-group', handleJoinedGroup);
       socket.off('chat', handleChat);
@@ -170,15 +162,15 @@ const Chat = () => {
       socket.off('user-stop-typing', handleUserStopTyping);
       socket.off('user-status-response', handleUserStatusResponse);
       socket.off('user-status-change', handleUserStatusChange);
+      socket.off('error', handleSocketError);
 
       setIsOtherUserTyping(false);
-      setTypingUsername('');
       setIsOtherUserOnline(false);
     };
   }, [channel?.id, user?.id, isSocketReady, otherUserId]);
 
   return (
-    <section className="h-full relative overflow-hidden">
+    <section className="h-full relative overflow-hidden flex flex-col">
       <PageInfo
         isChannel={true}
         name={
@@ -199,14 +191,24 @@ const Chat = () => {
         isOnline={!channel?.name && isOtherUserOnline}
       />
 
+      {(!isSocketReady || socketError) && (
+        <div className="bg-yellow-600/90 text-sm px-4 py-2 text-center">
+          {socketError || 'Realtime connection is offline. Messages may be delayed.'}
+        </div>
+      )}
+
       <div
         ref={ref}
-        className="flex flex-col overflow-x-hidden overflow-y-auto pb-10 h-[85%] scroll-smooth"
+        className="flex-1 min-h-0 flex flex-col overflow-x-hidden overflow-y-auto pb-4 scroll-smooth"
       >
         {!isPending ? (
-          messages && messages.length > 0 ? (
-            messages.map((message, index) => (
-              <Message key={index} message={message} />
+          error ? (
+            <p className="bg-red-600 p-3 m-2 rounded-md text-center">
+              {error}
+            </p>
+          ) : messages && messages.length > 0 ? (
+            messages.map((message) => (
+              <Message key={message.id || String(message.createdAt)} message={message} />
             ))
           ) : (
             <p className="bg-cyan-600 p-3 m-2 rounded-md text-center">
@@ -228,7 +230,7 @@ const Chat = () => {
         )}
       </div>
 
-      <ChatInput channelId={channel?.id!} setMessages={setMessages} />
+      {channel?.id && <ChatInput channelId={channel.id} />}
     </section>
   );
 };

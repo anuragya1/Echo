@@ -61,7 +61,7 @@ const Box: FC<Props> = ({ user }) => {
 
     return (
         <>
-            <div className="flex p-3 items-center my-3">
+            <div className="flex flex-wrap gap-3 p-3 items-center my-3">
                 <LazyLoadImage
                     onClick={() => navigate('/profile', { state: { userId: user.id } })}
                     src={user.image}
@@ -71,13 +71,13 @@ const Box: FC<Props> = ({ user }) => {
                 />
                 <p
                     onClick={() => navigate('/profile', { state: { userId: user.id } })}
-                    className="ml-3 text-xl font-semibold cursor-pointer">
+                    className="min-w-0 flex-1 text-xl font-semibold cursor-pointer truncate">
                     {user.username}
                 </p>
                 {
                     user.id !== currentUser?.id
                     &&
-                    <div className="w-1/2 flex ml-auto">
+                    <div className="w-full sm:w-auto sm:min-w-[220px] flex flex-wrap ml-auto">
                         {
                             isFriend
                                 ?

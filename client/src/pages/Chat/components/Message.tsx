@@ -1,10 +1,10 @@
-import moment from 'moment';
 import type{ FC } from 'react'
 import { useState } from 'react';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 import { updateMessage } from '../../../services/messageService';
+import { formatChatDate, formatChatTime, isToday } from '../../../utils/date';
 import type { message } from '../../../utils/types';
 import { useAuthStore } from '../../../zustand/store/useAuthStore';
 
@@ -71,11 +71,11 @@ const Message: FC<Props> = ({ message }) => {
                 <p className='mr-3'>{message.user?.username !== user?.username && message.user?.username}</p>
                 <p>
                     {
-                        moment(message.createdAt).isSame(Date.now(), 'day')
+                        isToday(message.createdAt)
                             ?
-                            moment(message.createdAt).format('HH:mm')
+                            formatChatTime(message.createdAt)
                             :
-                            moment(message.createdAt).format('DD MMM HH:mm')
+                            formatChatDate(message.createdAt, true)
                     }
                 </p>
             </div>

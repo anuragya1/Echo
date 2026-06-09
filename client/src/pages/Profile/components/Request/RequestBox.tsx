@@ -72,7 +72,7 @@ const RequestBox: FC<Props> = ({ request, setTrigger }) => {
 
     return (
         <>
-            <div className="flex p-3 items-center">
+            <div className="flex flex-wrap gap-3 p-3 items-center">
                 <LazyLoadImage
                     onClick={() => navigate('/profile', { state: { userId: request.id } })}
                     src={request.image}
@@ -82,10 +82,10 @@ const RequestBox: FC<Props> = ({ request, setTrigger }) => {
                 />
                 <p
                     onClick={() => navigate('/profile', { state: { userId: request.id } })}
-                    className="ml-3 text-xl font-semibold cursor-pointer">
+                    className="min-w-0 flex-1 text-xl font-semibold cursor-pointer truncate">
                     {request.username}
                 </p>
-                <div className="w-1/2 flex ml-auto">
+                <div className="w-full sm:w-auto sm:min-w-[300px] flex flex-wrap ml-auto">
                     <IconButton isTextCanClosed Icon={BsCheck2} text='Accept' type="button" handleClick={handleAccept} />
                     <IconButton isTextCanClosed Icon={RxCross2} text='Decline' type="button" handleClick={handleDecline} />
                     {

@@ -28,7 +28,8 @@ const getUsersBySearch = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    await userService.updateUser({ id, ...req.body });
+    const { username, image, about } = req.body;
+    await userService.updateUser({ id, username, image, about });
     res.json({
       statusCode: '200',
       message: 'User updated successfully.'

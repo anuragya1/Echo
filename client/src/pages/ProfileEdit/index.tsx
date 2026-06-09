@@ -4,6 +4,8 @@ import { toast, Toaster } from 'react-hot-toast';
 import type { User } from '../../utils/types';
 import { useAuthStore } from '../../zustand/store/useAuthStore';
 import PageInfo from '../../components/layout/ContentArea/PageInfo';
+import StateNotice from '../../components/feedback/StateNotice';
+import Spinner from '../../components/loading/Spinner';
 import BasicButton from '../../components/buttons/BasicButton';
 import { getUser, updateUser, uploadUserImage } from '../../services/userService';
 
@@ -12,15 +14,26 @@ const ProfileEdit = () => {
   const [details, setDetails] = useState<User>();
   const [image, setImage] = useState<any>();
   const [name, setName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
   const inputRef = useRef<any>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!user?.id) return;
+  const fetchUser = async () => {
+    if (!user?.id) return;
+    try {
+      setIsLoading(true);
+      setError('');
       const result = await getUser(user.id);
       setDetails(result.user);
-    };
+    } catch {
+      setError('Unable to load your profile.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUser();
   }, [user?.id]);
 
@@ -30,16 +43,41 @@ const ProfileEdit = () => {
     const username = e.target.username.value;
     const about = e.target.about.value;
 
-    if (!username) return;
+    if (!username || username.length < 5) {
+      return toast.error('Username must be at least 5 characters.', {
+        duration: 3000,
+        position: 'bottom-center',
+        style: {
+          backgroundColor: '#353535',
+          color: '#fff',
+        },
+      });
+    }
 
     let statusCode: string;
     let message: string;
 
-    if (image) {
-      const secureUrl = await uploadUserImage(image);
-      ({ statusCode, message } = await updateUser(user?.id!, { username, about, image: secureUrl }));
-    } else {
-      ({ statusCode, message } = await updateUser(user?.id!, { username, about }));
+    try {
+      setIsSaving(true);
+
+      if (image) {
+        const secureUrl = await uploadUserImage(image);
+        ({ statusCode, message } = await updateUser(user?.id!, { username, about, image: secureUrl }));
+      } else {
+        ({ statusCode, message } = await updateUser(user?.id!, { username, about }));
+      }
+    } catch {
+      setIsSaving(false);
+      return toast.error('Unable to save profile. Please try again.', {
+        duration: 3000,
+        position: 'bottom-center',
+        style: {
+          backgroundColor: '#353535',
+          color: '#fff',
+        },
+      });
+    } finally {
+      setIsSaving(false);
     }
 
     if (statusCode === '200') {
@@ -69,6 +107,7 @@ const ProfileEdit = () => {
 
   const handleChange = (e: any) => {
     const imageFile = e.target.files[0];
+    if (!imageFile) return;
     setName(imageFile.name);
 
     if (imageFile && FileReader) {
@@ -82,8 +121,10 @@ const ProfileEdit = () => {
     return (
         <section>
             <PageInfo isChannel={false} name='Edit Profile' />
-            <form className='w-full flex flex-col items-center justify-around py-5' onSubmit={handleSubmit} action='POST'>
-                <div className='flex md:flex-row flex-col'>
+            {isLoading && <Spinner size="lg" />}
+            {error && <StateNotice title="Profile unavailable" message={error} actionText="Try again" onAction={fetchUser} />}
+            {!isLoading && !error && <form className='w-full flex flex-col items-center justify-around py-5 px-3' onSubmit={handleSubmit} action='POST'>
+                <div className='flex md:flex-row flex-col items-center'>
                     <LazyLoadImage
                         className='rounded-full w-52 h-52 object-cover cursor-pointer'
                         onClick={handleClick}
@@ -103,7 +144,7 @@ const ProfileEdit = () => {
                     </div>
                     <input onChange={handleChange} ref={inputRef} type="file" name="image" hidden accept='image/png, image/jpeg' />
                 </div>
-                <div className='mt-10 flex flex-col md:w-[400px]'>
+                <div className='mt-10 flex flex-col w-full max-w-[400px]'>
                     <label className='text-xl font-semibold' htmlFor="username">Username:</label>
                     <input
                         minLength={5}
@@ -125,9 +166,9 @@ const ProfileEdit = () => {
                         rows={10}
                         defaultValue={details?.about}
                     ></textarea>
-                    <BasicButton type='submit'>Save</BasicButton>
+                    <BasicButton type='submit' disabled={isSaving}>{isSaving ? 'Saving...' : 'Save'}</BasicButton>
                 </div>
-            </form>
+            </form>}
             <Toaster />
         </section>
     )

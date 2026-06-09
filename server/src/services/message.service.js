@@ -1,6 +1,14 @@
 import { Message } from "../models/message.model.js"
 import { Group } from "../models/group.model.js";
-const getMessage = async ({ id }) => {
+
+const isGroupMember = async ({ channelId, userId }) => {
+  const group = await Group.findOne({ id: channelId, participants: userId }).select('id');
+  return Boolean(group);
+};
+
+const normalizeLimit = (limit) => Math.min(Math.max(Number(limit) || 50, 1), 100);
+
+const getMessage = async ({ id, userId }) => {
   try {
     const message = await Message.findOne({ id });
     if (!message) {
@@ -9,6 +17,14 @@ const getMessage = async ({ id }) => {
         message: 'Message not found.'
       };
     }
+
+    if (!(await isGroupMember({ channelId: message.channelId, userId }))) {
+      return {
+        statusCode: '403',
+        message: 'You are not allowed to read this message.'
+      };
+    }
+
     return message;
   } catch (error) {
     return {
@@ -18,22 +34,32 @@ const getMessage = async ({ id }) => {
   }
 };
 
-const getMessagesByChannel = async ({ id }) => {
+const getMessagesByChannel = async ({ id, userId, limit, before }) => {
   try {
-    
-    const messages = await Message.find({ channelId: id })
-      .sort({ createdAt: 1 })
-
-    if (!messages || messages.length === 0) {
+    if (!(await isGroupMember({ channelId: id, userId }))) {
       return {
-        statusCode: '404',
-        message: 'No messages found for this channel.'
+        statusCode: '403',
+        message: 'You are not allowed to read this channel.'
       };
     }
+
+    const query = { channelId: id };
+    if (before) {
+      const beforeDate = new Date(before);
+      if (!Number.isNaN(beforeDate.getTime())) {
+        query.createdAt = { $lt: beforeDate };
+      }
+    }
     
-    return messages;
+    const messages = await Message.find(query)
+      .sort({ createdAt: -1 })
+      .limit(normalizeLimit(limit));
+
+    return {
+      messages: messages.reverse(),
+      nextBefore: messages.length ? messages[0].createdAt : null
+    };
   } catch (error) {
-    console.error("Error in getMessagesByChannel:", error);
     return {
       statusCode: '404',
       message: 'Messages not found.',
@@ -43,18 +69,26 @@ const getMessagesByChannel = async ({ id }) => {
 };
 const addMessage = async ({ text, images, channelId, userId }) => {
   try {
+    if (!text?.trim() && (!images || images.length === 0)) {
+      return {
+        statusCode: '400',
+        message: 'Message text or image is required.'
+      };
+    }
+
+    if (!(await isGroupMember({ channelId, userId }))) {
+      return {
+        statusCode: '403',
+        message: 'You are not allowed to post in this channel.'
+      };
+    }
+
     const message = await Message.create({
-      text,
+      text: text?.trim() || '',
       images: images || [],
       channelId,
       userId
     });
-
-    // Add message ID to channel's messages array
-    await Group.findOneAndUpdate(
-      { id: channelId },
-      { $addToSet: { messages: message.id } }
-    );
 
     return {
       statusCode: '201',
@@ -69,11 +103,29 @@ const addMessage = async ({ text, images, channelId, userId }) => {
   }
 };
 
-const updateMessage = async ({ id, message }) => {
+const updateMessage = async ({ id, message, userId }) => {
   try {
+    const existingMessage = await Message.findOne({ id });
+    if (!existingMessage) {
+      return {
+        statusCode: '404',
+        message: 'Message not found.'
+      };
+    }
+
+    if (existingMessage.userId !== userId) {
+      return {
+        statusCode: '403',
+        message: 'You are not allowed to update this message.'
+      };
+    }
+
     const updatedMessage = await Message.findOneAndUpdate(
       { id },
-      message,
+      {
+        text: message.text?.trim() ?? existingMessage.text,
+        images: message.images ?? existingMessage.images
+      },
       { new: true }
     );
 
@@ -96,7 +148,7 @@ const updateMessage = async ({ id, message }) => {
   }
 };
 
-const deleteMessage = async ({ id }) => {
+const deleteMessage = async ({ id, userId }) => {
   try {
     const message = await Message.findOne({ id });
     
@@ -107,11 +159,12 @@ const deleteMessage = async ({ id }) => {
       };
     }
 
-    // Remove message ID from channel's messages array
-    await Group.findOneAndUpdate(
-      { id: message.channelId },
-      { $pull: { messages: id } }
-    );
+    if (message.userId !== userId) {
+      return {
+        statusCode: '403',
+        message: 'You are not allowed to delete this message.'
+      };
+    }
 
     await Message.deleteOne({ id });
 

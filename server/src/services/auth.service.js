@@ -9,6 +9,18 @@ function createError(status, message) {
   return error;
 }
 
+const createTokenPayload = (user) => ({
+  id: user.id,
+  username: user.username,
+  image: user.image,
+});
+
+const signAccessToken = (user) =>
+  jwt.sign(createTokenPayload(user), config.jwtSecret, { expiresIn: config.jwtExpire });
+
+const signRefreshToken = (user) =>
+  jwt.sign({ id: user.id }, config.refreshJwtSecret, { expiresIn: config.refreshJwtExpire });
+
 const authService = {
   validateUser: async (email, password) => {
     const user = await User.findOne({ email });
@@ -23,15 +35,22 @@ const authService = {
   },
 
   login: async (user) => {
-    const payload = {
-      id: user.id,
-      username: user.username,
-      image: user.image,
-    };
-    
     return {
       statusCode: '200',
-      access_token: jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpire }),
+      access_token: signAccessToken(user),
+      refresh_token: signRefreshToken(user),
+    };
+  },
+
+  refresh: async (refreshToken) => {
+    const decoded = jwt.verify(refreshToken, config.refreshJwtSecret);
+    const user = await User.findOne({ id: decoded.id }).select('-password');
+
+    if (!user) throw createError(401, 'Invalid refresh token');
+
+    return {
+      statusCode: '200',
+      access_token: signAccessToken(user),
     };
   },
 

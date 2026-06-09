@@ -35,9 +35,12 @@ const createUser = async ({ email, username, password }) => {
 
 const updateUser = async (userData) => {
   try {
+    const updates = Object.fromEntries(
+      Object.entries(userData).filter(([key, value]) => key !== 'id' && value !== undefined)
+    );
     const updatedUser = await User.findOneAndUpdate(
       { id: userData.id },
-      userData,
+      updates,
       { new: true, runValidators: true }
     );
     return updatedUser;

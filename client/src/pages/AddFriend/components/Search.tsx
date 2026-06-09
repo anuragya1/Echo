@@ -22,6 +22,7 @@ const Search: FC<Props> = ({ search, setSearch }) => {
                     type="text"
                     placeholder="Write a username..."
                     spellCheck='false'
+                    defaultValue={search}
                 />
                 <button className="absolute right-2 text-3xl top-2 text-neutral-400" type="submit">
                     <BiSearchAlt2 />

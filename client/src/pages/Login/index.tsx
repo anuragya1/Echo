@@ -1,20 +1,27 @@
 import Cookies from "js-cookie";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import Logo from '../../assets/brand-logo.png';
 import FormSuccess from "../../components/loading/FormSuccess";
 import Divider from "../Register/components/Divider";
 import LoginForm from "./components/LoginForm";
 import Relogin from "./components/Relogin";
+import { useAuthStore } from "../../zustand/store/useAuthStore";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
   const [isFormOpen, setIsFormOpen] = useState<boolean>(true);
   const [lastUser, setLastUser] = useState<string>(Cookies.get('last_user') || '');
 
+  useEffect(() => {
+    if (user?.id) navigate('/');
+  }, [user?.id, navigate]);
+
   return (
-    <div className="flex justify-center items-center h-[100vh]">
+    <div className="flex justify-center items-center min-h-[100dvh] p-3">
       <div className="bg-neutral-800 px-3 py-10 shadow-lg rounded-md text-white min-h-[500px] w-full sm:w-[400px] h-full sm:h-auto">
         {
           isFormOpen

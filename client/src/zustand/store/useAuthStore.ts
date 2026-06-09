@@ -8,6 +8,10 @@ interface User {
   image: string;
 }
 
+interface DecodedUser extends User {
+  exp?: number;
+}
+
 interface AuthState {
   user: User | null;
   setUser: (user: User | null) => void;
@@ -20,15 +24,25 @@ let initialUser: User | null = null;
 
 if (token) {
   try {
-    const { username, id, image }: any = jwtDecode(token);
-    initialUser = { username, id, image };
+    const { username, id, image, exp } = jwtDecode<DecodedUser>(token);
+    const isExpired = exp ? exp * 1000 <= Date.now() : false;
+
+    if (isExpired) {
+      Cookies.remove('access_token');
+    } else {
+      initialUser = { username, id, image };
+    }
   } catch (error) {
-    console.error('Invalid token:', error);
+    Cookies.remove('access_token');
   }
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: initialUser,
   setUser: (user) => set({ user }),
-  logOut: () => set({ user: null }),
+  logOut: () => {
+    Cookies.remove('access_token');
+    Cookies.remove('refresh_token');
+    set({ user: null });
+  },
 }));

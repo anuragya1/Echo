@@ -2,9 +2,9 @@ import { Group } from '../models/group.model.js';
 import User from '../models/user.model.js';
 import { Message } from '../models/message.model.js';
 
-const getGroup = async (id) => {
+const getGroup = async (id, userId) => {
   try {
-    const group = await Group.findOne({ id });
+    const group = await Group.findOne({ id, participants: userId });
     
     if (!group) {
       return {
@@ -36,19 +36,18 @@ const getGroupsByUser = async (userId) => {
       participants: userId
     })
       .sort({ updatedAt: -1 })
-      .select('-messages -createdAt');
+      .select('-createdAt');
 
-    // Get last message for each group
-    const lastMessages = [];
-    for (let i = 0; i < channels.length; i++) {
-      const lastMessage = await Message.findOne({
-        channelId: channels[i].id
-      })
-        .sort({ createdAt: -1 })
-        .limit(1);
-      
-      lastMessages.push(lastMessage);
-    }
+    const channelIds = channels.map((channel) => channel.id);
+    const latestMessages = await Message.aggregate([
+      { $match: { channelId: { $in: channelIds } } },
+      { $sort: { createdAt: -1 } },
+      { $group: { _id: '$channelId', message: { $first: '$$ROOT' } } }
+    ]);
+    const latestByChannel = new Map(
+      latestMessages.map((entry) => [entry._id, entry.message])
+    );
+    const lastMessages = channels.map((channel) => latestByChannel.get(channel.id) || null);
 
     return {
       lastMessages,
@@ -62,14 +61,17 @@ const getGroupsByUser = async (userId) => {
   }
 };
 
-const createGroup = async ({ participants, admins, image, name, description }) => {
+const createGroup = async ({ participants, admins, image, name, description, userId }) => {
   try {
+    const participantIds = Array.from(new Set([userId, ...(participants || [])].filter(Boolean)));
+    const adminIds = Array.from(new Set([userId, ...(admins || [])].filter(Boolean)));
+
     const channel = await Group.create({
-      participants: participants || [],
-      admins: admins || [],
+      participants: participantIds,
+      admins: adminIds,
       image,
-      name,
-      description
+      name: name?.trim(),
+      description: description?.trim()
     });
 
     return {
@@ -85,11 +87,37 @@ const createGroup = async ({ participants, admins, image, name, description }) =
   }
 };
 
-const updateGroup = async ({ id, group }) => {
+const updateGroup = async ({ id, group, userId }) => {
   try {
+    const existingGroup = await Group.findOne({ id });
+    if (!existingGroup) {
+      return {
+        statusCode: '404',
+        message: 'channel not found.'
+      };
+    }
+
+    if (!existingGroup.admins.includes(userId)) {
+      return {
+        statusCode: '403',
+        message: 'Only channel admins can update this channel.'
+      };
+    }
+
+    const allowedGroupUpdates = {
+      image: group.image,
+      name: group.name?.trim(),
+      description: group.description?.trim(),
+      participants: group.participants,
+      admins: group.admins
+    };
+    const updates = Object.fromEntries(
+      Object.entries(allowedGroupUpdates).filter(([, value]) => value !== undefined)
+    );
+
     const updatedGroup = await Group.findOneAndUpdate(
       { id },
-      group,
+      updates,
       { new: true }
     );
 
@@ -112,7 +140,7 @@ const updateGroup = async ({ id, group }) => {
   }
 };
 
-const deleteGroup = async (id) => {
+const deleteGroup = async ({ id, userId }) => {
   try {
     const group = await Group.findOne({ id });
     
@@ -120,6 +148,13 @@ const deleteGroup = async (id) => {
       return {
         statusCode: '404',
         message: 'channel not found.'
+      };
+    }
+
+    if (!group.admins.includes(userId)) {
+      return {
+        statusCode: '403',
+        message: 'Only channel admins can delete this channel.'
       };
     }
 

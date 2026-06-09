@@ -25,44 +25,46 @@ const PageInfo: FC<Props> = ({ image, name, participants, isChannel, isOnline = 
   };
 
   return (
-    <div
-      className={`text-2xl flex items-center px-5 w-full sticky z-50 top-0 bg-neutral-900 border-b border-neutral-700 ${
-        participants ? 'py-3 h-22' : 'py-11 h-20'
-      }`}
-    >
-      <FaArrowLeft className="mr-3 md:mr-5 cursor-pointer" onClick={() => navigate(-1)} />
+    <div className="flex items-center gap-2 md:gap-4 px-3 md:px-5 w-full sticky z-30 top-0 bg-neutral-900 border-b border-neutral-700 min-h-20 py-3">
+      <button
+        type="button"
+        aria-label="Go back"
+        className="shrink-0 p-2 rounded-md hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        onClick={() => navigate(-1)}
+      >
+        <FaArrowLeft />
+      </button>
       {image && (
         <LazyLoadImage
           src={image}
           alt="channel-pp"
           effect="blur"
-          className="w-16 h-16 rounded-full mx-3 lg:mx-5 object-cover"
+          className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover shrink-0"
         />
       )}
-      <div className="max-h-16 xl:w-96 lg:w-80 md:w-52 sm:w-36 w-32 overflow-hidden">
-        <p className="hidden md:block">{name}</p>
-        <p className="md:hidden">{name}</p>
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <p className="text-lg md:text-2xl font-semibold truncate">{name}</p>
 
         {!participants && isOnline && (
           <p className="text-xs text-green-400 font-normal mt-1">● Online</p>
         )}
 
         {participants && (
-          <span className="text-sm text-neutral-300 mr-1 font-semibold">Participants: </span>
+          <div className="text-sm text-neutral-300 mt-1 truncate">
+            <span className="font-semibold">Participants: </span>
+            {participants.map((participant) => participant.username).join(', ')}
+          </div>
         )}
-        {participants?.length! > 0 &&
-          participants?.map((participant) => {
-            return (
-              <span key={participant.id} className="text-sm text-neutral-300 mr-2">
-                {participant.username}
-              </span>
-            );
-          })}
       </div>
       {isChannel && participants !== null && (
-        <div className="ml-auto cursor-pointer group">
-          <RxDotsVertical onClick={handleClick} />
-        </div>
+        <button
+          type="button"
+          aria-label="Open channel details"
+          className="shrink-0 p-2 rounded-md hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          onClick={handleClick}
+        >
+          <RxDotsVertical />
+        </button>
       )}
     </div>
   );

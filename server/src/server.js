@@ -11,24 +11,37 @@ import messageRoutes from './routes/message.route.js';
 import groupRoutes from './routes/group.route.js';
 import authRoutes from './routes/auth.route.js';
 import { setupSocket } from './socket/index.js';
+import { config } from './config/env.js';
 
 const app = express();
 const server = http.createServer(app);
+const allowedOrigins = config.clientOrigin
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+};
 
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true
   }
 });
 
-connectDB();
+await connectDB();
 
-app.use(cors({ 
-  origin: '*', 
-  credentials: true 
-}));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -53,13 +66,24 @@ app.get('/api/profile', jwtAuthMiddleware, async (req, res) => {
   }
 });
 
+app.use((error, req, res, next) => {
+  const status = error.status || error.statusCode || 500;
+  const message = status === 500 ? 'Internal server error' : error.message;
+
+  if (status === 500) {
+    console.error(error);
+  }
+
+  res.status(status).json({ message });
+});
 
 setupSocket(io);
 
-const PORT = 5000;
-server.listen(PORT, () => {
+const PORT = config.port;
+const HOST = '0.0.0.0';
+server.listen(PORT, HOST, () => {
 
-  console.log(`   Server running on port ${PORT}`);
+  console.log(`   Server running on ${HOST}:${PORT}`);
   console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log('');
 });

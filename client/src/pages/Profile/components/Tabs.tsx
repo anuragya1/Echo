@@ -36,8 +36,9 @@ const Tabs: FC<Props> = ({ profileId }) => {
 
     return (
         <div className="max-w-[800px] mx-auto pb-10">
-            <div className="flex justify-around">
-                <span
+            <div className="flex justify-around overflow-x-auto">
+                <button
+                    type="button"
                     onClick={handleClickFriends}
                     className={`
                         text-xl py-3 cursor-pointer w-full text-center duration-200 transition-all border-b 
@@ -45,12 +46,13 @@ const Tabs: FC<Props> = ({ profileId }) => {
                     `}
                 >
                     Friends
-                </span>
+                </button>
                 {
                     user?.id === profileId
                     &&
                     <>
-                        <span
+                        <button
+                            type="button"
                             onClick={handleClickRequests}
                             className={`
                                 text-xl py-3 cursor-pointer w-full text-center duration-200 transition-all border-b 
@@ -58,8 +60,9 @@ const Tabs: FC<Props> = ({ profileId }) => {
                             `}
                         >
                             Requests
-                        </span>
-                        <span
+                        </button>
+                        <button
+                            type="button"
                             onClick={handleClickBlock}
                             className={`
                                 text-xl py-3 cursor-pointer w-full text-center duration-200 transition-all border-b 
@@ -67,7 +70,7 @@ const Tabs: FC<Props> = ({ profileId }) => {
                             `}
                         >
                             Blocked
-                        </span>
+                        </button>
                     </>
                 }
             </div>
@@ -81,7 +84,7 @@ const Tabs: FC<Props> = ({ profileId }) => {
                         :
                         <>
                             {
-                                tab === 'friends' && <FriendsTab />
+                                tab === 'friends' && <FriendsTab profileId={profileId} />
                             }
                             {
                                 tab === 'requests' && <RequestsTab />

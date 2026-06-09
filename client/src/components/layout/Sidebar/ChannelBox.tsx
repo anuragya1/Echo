@@ -1,10 +1,10 @@
-import moment from "moment";
 import type { FC } from "react";
 import { useState, useEffect } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { useNavigate } from "react-router-dom";
 
 import { getUser } from "../../../services/userService";
+import { formatChatDate, formatChatTime, isBefore, isToday } from "../../../utils/date";
 import type { channel, message, User } from "../../../utils/types";
 import { useChannelStore } from "../../../zustand/store/useChannelStore";
 
@@ -14,9 +14,10 @@ type Props = {
   userId: string;
   lastMessage: message | null;
   search: string;
+  onNavigate?: () => void;
 }
 
-const ChannelBox: FC<Props> = ({ channel, userId, lastMessage, search }) => {
+const ChannelBox: FC<Props> = ({ channel, userId, lastMessage, search, onNavigate }) => {
   const navigate = useNavigate();
   
   const { selectedChannel, lastSeen, refresh ,setLastSeen,setSelectedChannel } = useChannelStore();
@@ -36,7 +37,7 @@ const ChannelBox: FC<Props> = ({ channel, userId, lastMessage, search }) => {
       setBlockList(result.user.blocked);
     }
 
-    if (moment(lastSeen).diff(moment.utc(channel.updatedAt)) < 0 && lastMessage?.userId !== userId) setIsUnseen(true);
+    if (isBefore(lastSeen, channel.updatedAt) && lastMessage?.userId !== userId) setIsUnseen(true);
     if (channel.participants.length === 2 && !channel.name) {
       fetchOtherUser();
       fetchBlocked();
@@ -51,6 +52,7 @@ const ChannelBox: FC<Props> = ({ channel, userId, lastMessage, search }) => {
   setSelectedChannel(channel.id);
 
     setIsUnseen(false);
+    onNavigate?.();
     return navigate('/chat', { state: { channelId: channel.id } })
   }
 
@@ -83,10 +85,10 @@ const ChannelBox: FC<Props> = ({ channel, userId, lastMessage, search }) => {
               alt="user-pp"
             />
             <div className='ml-3'>
-              <h5 className='font-semibold w-32 sm:w-64 md:w-40 lg:w-52 xl:w-56 h-5 overflow-hidden'>
+              <h5 className='font-semibold w-32 sm:w-64 md:w-40 lg:w-52 xl:w-56 h-5 overflow-hidden text-ellipsis whitespace-nowrap'>
                 {otherUser?.username}
               </h5>
-              <p className='text-neutral-400 mt-1 text-sm w-32 sm:w-64 md:w-40 lg:w-52 xl:w-56 h-5 overflow-hidden'>
+              <p className='text-neutral-400 mt-1 text-sm w-32 sm:w-64 md:w-40 lg:w-52 xl:w-56 h-5 overflow-hidden text-ellipsis whitespace-nowrap'>
                 {lastMessage
                   ?
                   (
@@ -110,10 +112,10 @@ const ChannelBox: FC<Props> = ({ channel, userId, lastMessage, search }) => {
               alt="group-pp"
             />
             <div className='ml-3'>
-              <h5 className='font-semibold w-32 sm:w-64 md:w-40 lg:w-52 xl:w-56 h-5 overflow-hidden'>
+              <h5 className='font-semibold w-32 sm:w-64 md:w-40 lg:w-52 xl:w-56 h-5 overflow-hidden text-ellipsis whitespace-nowrap'>
                 {channel.name}
               </h5>
-              <p className='text-neutral-400 text-sm w-32 sm:w-64 md:w-40 lg:w-52 xl:w-56 h-5 overflow-hidden'>
+              <p className='text-neutral-400 text-sm w-32 sm:w-64 md:w-40 lg:w-52 xl:w-56 h-5 overflow-hidden text-ellipsis whitespace-nowrap'>
                 {lastMessage?.text
                   ?
                   (
@@ -132,11 +134,11 @@ const ChannelBox: FC<Props> = ({ channel, userId, lastMessage, search }) => {
       <div className='ml-auto h-full'>
         <p className='text-neutral-400 mb-1'>
           {
-            moment(lastMessage?.createdAt).isSame(Date.now(), 'day')
+            isToday(lastMessage?.createdAt)
               ?
-              moment(lastMessage?.createdAt).format('HH:mm')
+              formatChatTime(lastMessage?.createdAt)
               :
-              moment(lastMessage?.createdAt).format('DD MMM')
+              formatChatDate(lastMessage?.createdAt)
           }</p>
         {
           isUnseen

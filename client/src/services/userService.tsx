@@ -1,9 +1,9 @@
 import axios from "axios";
 import axiosWithAuth from "../utils/axiosWithAuth";
-import { API_BASE_URL, CLOUD_NAME, UPLOAD_PRESET } from "../utils/constants";
+import { CLOUD_NAME, UPLOAD_PRESET } from "../utils/constants";
 
 export const getUser = async (id: string) => {
-    const { data } = await axios.get(`${API_BASE_URL}/users/${id}`);
+    const { data } = await axiosWithAuth.get(`/users/${id}`);
     return data;
 };
 

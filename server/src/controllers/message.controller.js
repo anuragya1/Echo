@@ -1,10 +1,15 @@
 import * as messageService from "../services/message.service.js";
 
+const sendServiceResult = (res, result, successStatus = 200) => {
+  const status = Number(result?.statusCode) || successStatus;
+  res.status(status).json(result);
+};
+
 const getMessage = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const message = await messageService.getMessage({ id });
-    res.json(message);
+    const message = await messageService.getMessage({ id, userId: req.user.id });
+    sendServiceResult(res, message);
   } catch (error) {
     next(error);
   }
@@ -13,8 +18,13 @@ const getMessage = async (req, res, next) => {
 const getMessagesByChannel = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const messages = await messageService.getMessagesByChannel({ id });
-    res.json(messages);
+    const messages = await messageService.getMessagesByChannel({
+      id,
+      userId: req.user.id,
+      limit: req.query.limit,
+      before: req.query.before
+    });
+    sendServiceResult(res, messages);
   } catch (error) {
     next(error);
   }
@@ -22,8 +32,8 @@ const getMessagesByChannel = async (req, res, next) => {
 
 const createMessage = async (req, res, next) => {
   try {
-    const result = await messageService.addMessage(req.body);
-    res.status(201).json(result);
+    const result = await messageService.addMessage({ ...req.body, userId: req.user.id });
+    sendServiceResult(res, result, 201);
   } catch (error) {
     next(error);
   }
@@ -32,8 +42,8 @@ const createMessage = async (req, res, next) => {
 const updateMessage = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await messageService.updateMessage({ id, message: req.body });
-    res.json(result);
+    const result = await messageService.updateMessage({ id, message: req.body, userId: req.user.id });
+    sendServiceResult(res, result);
   } catch (error) {
     next(error);
   }
@@ -42,8 +52,8 @@ const updateMessage = async (req, res, next) => {
 const deleteMessage = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await messageService.deleteMessage({ id });
-    res.json(result);
+    const result = await messageService.deleteMessage({ id, userId: req.user.id });
+    sendServiceResult(res, result);
   } catch (error) {
     next(error);
   }
