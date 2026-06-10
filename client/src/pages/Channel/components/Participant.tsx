@@ -59,16 +59,16 @@ const Participant: FC<Props> = ({ participant, isAdmin }) => {
   }
 
   return (
-    <div className='flex items-center py-6 w-full'>
-      <LazyLoadImage src={participant.image} alt='participant' effect='blur' className='rounded-full w-16 mr-3' />
-      <p className='text-2xl'>{participant.username}</p>
+    <div className='flex flex-wrap gap-3 items-center py-6 w-full'>
+      <LazyLoadImage src={participant.image} alt='participant' effect='blur' className='rounded-full w-16 h-16 object-cover shrink-0' />
+      <p className='text-xl md:text-2xl min-w-0 flex-1 truncate'>{participant.username}</p>
       {
         isAdmin && <AiFillStar className='ml-2 text-xl' />
       }
       {
         user?.id !== participant?.id
         &&
-        <div className="w-1/2 flex ml-auto">
+        <div className="w-full sm:w-auto sm:min-w-[260px] flex flex-wrap ml-auto">
           {
             isFriend
               ?

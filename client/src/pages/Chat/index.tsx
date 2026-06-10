@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import PageInfo from '../../components/layout/ContentArea/PageInfo';
+import StateNotice from '../../components/feedback/StateNotice';
 import Spinner from '../../components/loading/Spinner';
 import useChatScroll from '../../hooks/useChatScroll';
 import socket from '../../lib/socket';
@@ -16,6 +17,7 @@ import type { channel, message } from '../../utils/types';
 const Chat = () => {
   const user = useAuthStore((state) => state.user);
   const location = useLocation();
+  const channelId = location.state?.channelId;
 
   const [channel, setChannel] = useState<channel>();
   const [messages, setMessages] = useState<message[]>([]);
@@ -53,13 +55,18 @@ const Chat = () => {
 
   // Fetch channel and messages
   useEffect(() => {
-    if (!location.state?.channelId) return;
+    if (!channelId) {
+      setIsPending(false);
+      setError('No channel was selected.');
+      return;
+    }
+
     setIsPending(true);
     setError('');
 
     const fetchChannel = async () => {
       try {
-        const result = await getChannel(location.state.channelId);
+        const result = await getChannel(channelId);
         setChannel(result.channel);
 
         if (result.channel.participants.length === 2 && !result.channel.name) {
@@ -75,7 +82,7 @@ const Chat = () => {
 
     const fetchMessages = async () => {
       try {
-        const result = await getMessagesByChannel(location.state.channelId);
+        const result = await getMessagesByChannel(channelId);
         setMessages(result.messages || result);
       } catch {
         setError('Unable to load messages. Please try again.');
@@ -88,7 +95,7 @@ const Chat = () => {
       fetchMessages();
       fetchChannel();
     }
-  }, [location.state?.channelId, user?.id]);
+  }, [channelId, user?.id]);
 
   
   useEffect(() => {
@@ -171,7 +178,9 @@ const Chat = () => {
 
   return (
     <section className="h-full relative overflow-hidden flex flex-col">
-      <PageInfo
+      {!channelId ? (
+        <StateNotice title="No channel selected" message="Open a conversation from the sidebar to start chatting." />
+      ) : <PageInfo
         isChannel={true}
         name={
           channel?.name
@@ -189,7 +198,7 @@ const Chat = () => {
             : channel?.participants[0].image
         }
         isOnline={!channel?.name && isOtherUserOnline}
-      />
+      />}
 
       {(!isSocketReady || socketError) && (
         <div className="bg-yellow-600/90 text-sm px-4 py-2 text-center">

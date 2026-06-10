@@ -7,18 +7,26 @@ import { getUser } from "../../services/userService";
 import Info from "./components/Info";
 import Tabs from "./components/Tabs";
 import type { User } from "../../utils/types";
+import { useAuthStore } from "../../zustand/store/useAuthStore";
 
 const Profile = () => {
     const location = useLocation();
+    const user = useAuthStore((state) => state.user);
+    const profileId = location.state?.userId || user?.id;
     const [profileInfo, setProfileInfo] = useState<User>();
     const [isPending, setIsPending] = useState(true);
     const [error, setError] = useState('');
 
     const fetchDetails = async () => {
         try {
+            if (!profileId) {
+                setError('No profile was selected.');
+                return;
+            }
+
             setIsPending(true);
             setError('');
-            const result = await getUser(location.state.userId);
+            const result = await getUser(profileId);
             setProfileInfo(result.user);
         } catch {
             setError('Unable to load this profile.');
@@ -29,7 +37,7 @@ const Profile = () => {
 
     useEffect(() => {
         fetchDetails();
-    }, [location.state.userId]);
+    }, [profileId]);
 
     return (
         <section>
@@ -39,7 +47,7 @@ const Profile = () => {
             {!isPending && !error && profileInfo && (
                 <>
                     <Info details={profileInfo} />
-                    <Tabs profileId={location.state.userId} />
+                    <Tabs profileId={profileId!} />
                 </>
             )}
         </section>

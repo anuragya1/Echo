@@ -30,8 +30,13 @@ const Relogin: FC<Props> = ({ id, setIsFormOpen, setLastId }) => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const result = await getUser(id);
-      setLastUser(result.user);
+      try {
+        const result = await getUser(id);
+        setLastUser(result.user);
+      } catch {
+        Cookies.remove("last_user");
+        setLastId("");
+      }
     };
 
     fetchUser();
@@ -50,6 +55,7 @@ const Relogin: FC<Props> = ({ id, setIsFormOpen, setLastId }) => {
 
       const { id, username, image }: any = jwtDecode(result.access_token);
       Cookies.set("access_token", result.access_token, { expires: 3 });
+      Cookies.set("refresh_token", result.refresh_token, { expires: 30 });
       Cookies.set("last_user", id);
 
 

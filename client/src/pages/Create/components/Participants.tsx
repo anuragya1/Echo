@@ -5,6 +5,8 @@ import { getFriends } from "../../../services/userService";
 import UserBar from "./UserBar";
 import { useAuthStore } from "../../../zustand/store/useAuthStore";
 import type { User } from "../../../utils/types";
+import Spinner from "../../../components/loading/Spinner";
+import StateNotice from "../../../components/feedback/StateNotice";
 type Props = {
     participants: string[];
     setParticipants: Dispatch<SetStateAction<string[]>>;
@@ -16,13 +18,23 @@ const Participants: FC<Props> = ({ participants, setParticipants, admins, setAdm
     const user = useAuthStore((state) => state.user);
     const [search, setSearch] = useState<string>('');
     const [friends, setFriends] = useState<User[]>();
+    const [isPending, setIsPending] = useState(true);
+    const [error, setError] = useState('');
+
+    const fetchFriends = async () => {
+        try {
+            setIsPending(true);
+            setError('');
+            const result = await getFriends(user?.id!);
+            setFriends(Array.isArray(result.friends) ? result.friends : []);
+        } catch {
+            setError('Unable to load friends.');
+        } finally {
+            setIsPending(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchFriends = async () => {
-            const result = await getFriends(user?.id!);
-            setFriends(result.friends);
-        }
-
         fetchFriends();
     }, [user?.id])
 
@@ -40,10 +52,11 @@ const Participants: FC<Props> = ({ participants, setParticipants, admins, setAdm
                         />
                     </div>
                     <div className="overflow-auto">
-                        {
-                            friends
-                            &&
-                            friends.map((friend: User) => {
+                        {isPending && <Spinner size="sm" />}
+                        {error && <StateNotice title="Friends unavailable" message={error} actionText="Try again" onAction={fetchFriends} />}
+                        {!isPending && !error && friends?.length === 0 && <p className="text-neutral-400">No friends to add yet.</p>}
+                        {!isPending && !error &&
+                            friends?.map((friend: User) => {
                                 return (
                                     !participants.includes(friend.id)
                                     &&

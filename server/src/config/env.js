@@ -8,5 +8,5 @@ export const config = {
   jwtExpire: "7d",
   refreshJwtSecret: process.env.REFRESH_JWT_SECRET || process.env.JWT_SECRET || "supersecret-refresh",
   refreshJwtExpire: process.env.REFRESH_JWT_EXPIRE || "30d",
-  clientOrigin: process.env.CLIENT_ORIGIN || "http://localhost:5173,http://localhost:5174"
+  clientOrigin: process.env.CLIENT_ORIGIN || process.env.CLIENT_URL || "http://localhost:5173,http://localhost:5174"
 };

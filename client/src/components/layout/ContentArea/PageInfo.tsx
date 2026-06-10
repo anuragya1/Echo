@@ -19,6 +19,8 @@ const PageInfo: FC<Props> = ({ image, name, participants, isChannel, isOnline = 
   const location = useLocation();
 
   const handleClick = () => {
+    if (!location.state?.channelId) return;
+
     if (location.pathname === '/chat')
       return navigate('/channel', { state: { channelId: location.state.channelId } });
     navigate('/chat', { state: { channelId: location.state.channelId } });

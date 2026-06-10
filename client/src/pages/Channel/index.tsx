@@ -22,6 +22,7 @@ const Channel = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const user = useAuthStore((state)=>state.user)
+    const channelId = location.state?.channelId;
     const [channel, setChannel] = useState<channel>();
     const [isPending, setIsPending] = useState(true);
     const [error, setError] = useState('');
@@ -29,9 +30,14 @@ const Channel = () => {
 
     const fetchChannel = async () => {
         try {
+            if (!channelId) {
+                setError('No channel was selected.');
+                return;
+            }
+
             setIsPending(true);
             setError('');
-            const result = await getChannel(location.state.channelId);
+            const result = await getChannel(channelId);
             setChannel(result.channel);
         } catch {
             setError('Unable to load channel details.');
@@ -42,18 +48,20 @@ const Channel = () => {
 
     useEffect(() => {
         fetchChannel();
-    }, [location.state]);
+    }, [channelId]);
 
     const handleClick = async () => {
         const newParticipants: string[] = [];
 
-        for (let i = 0; i > channel?.participants.length!; i++) {
-            if (channel?.participants[i].id === user?.id) return;
+        if (!channel || !channelId) return;
 
-            newParticipants.push(channel?.participants[i].id);
+        for (let i = 0; i < channel.participants.length; i++) {
+            if (channel.participants[i].id === user?.id) continue;
+
+            newParticipants.push(channel.participants[i].id);
         }
 
-        await updateChannel(location.state.channelId, {
+        await updateChannel(channelId, {
             participants: newParticipants
         });
          toggleRefresh();

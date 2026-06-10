@@ -70,18 +70,18 @@ const UserBar: FC<Props> = ({ user, userId, isAdded, participants, setParticipan
     return (
         <div
             className={`
-                w-full items-center bg-neutral-700 rounded-md p-3 my-3
+                w-full items-center bg-neutral-700 rounded-md p-3 my-3 min-w-0
                 ${(search && !isAdded) ? (participant?.username?.toLowerCase().includes(search.toLowerCase()) ? 'flex' : 'hidden') : 'flex'}
             `}
         >
             <LazyLoadImage
                 src={participant?.image}
                 alt='participant'
-                className='w-12 h-12 rounded-full'
+                className='w-12 h-12 rounded-full shrink-0 object-cover'
                 effect='blur'
             />
-            <p className='ml-2 font-semibold'>{participant?.username}</p>
-            <div className='ml-auto'>
+            <p className='ml-2 font-semibold min-w-0 flex-1 truncate'>{participant?.username}</p>
+            <div className='ml-auto shrink-0 flex'>
                 <button
                     onClick={handleClick}
                     type='button'
@@ -102,7 +102,7 @@ const UserBar: FC<Props> = ({ user, userId, isAdded, participants, setParticipan
                         onClick={handleAddAdmin}
                         type='button'
                         className='bg-neutral-700 text-3xl hover:bg-neutral-600 p-2 rounded-md text-white'
-                        disabled={currentUser?.id === user}
+                        disabled={currentUser?.id === participant?.id}
                     >
                         {
                             admins?.includes(participant?.id!)

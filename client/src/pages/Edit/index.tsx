@@ -8,6 +8,7 @@ import { getChannel } from '../../services/channelService';
 import type { channel } from '../../utils/types';
 const Create = () => {
     const { state } = useLocation();
+    const channelId = state?.channelId;
     const [channel, setChannel] = useState<channel>();
     const [participants, setParticipants] = useState<string[]>([]);
     const [admins, setAdmins] = useState<string[]>([]);
@@ -17,9 +18,14 @@ const Create = () => {
 
     const fetchChannel = async () => {
         try {
+            if (!channelId) {
+                setError('No channel was selected.');
+                return;
+            }
+
             setIsPending(true);
             setError('');
-            const result = await getChannel(state.channelId);
+            const result = await getChannel(channelId);
             setImage(result.channel.image);
             setChannel(result.channel);
             setAdmins(result.channel.admins)
@@ -33,7 +39,7 @@ const Create = () => {
 
     useEffect(() => {
         fetchChannel();
-    }, [state]);
+    }, [channelId]);
 
     return (
         <section>

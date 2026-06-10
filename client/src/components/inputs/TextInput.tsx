@@ -18,9 +18,9 @@ const TextInput: FC<Props> = ({ label, placeholder, error, informations, refs, I
         {label}
       </label>
       <div className={`flex items-center border-b transition-all duration-100 ${error ? 'border-red-500' : 'border-neutral-500 focus-within:border-white'}`}>
-        <Icon className='text-2xl text-white' />
+        <Icon className='text-2xl text-white shrink-0' />
         <input
-          className='pl-3 text-white text-lg bg-transparent p-2 w-full outline-none placeholder-neutral-500'
+          className='pl-3 text-white text-lg bg-transparent p-2 min-w-0 flex-1 outline-none placeholder-neutral-500'
           placeholder={placeholder}
           name={label.toLowerCase()}
           type='text'
@@ -29,9 +29,9 @@ const TextInput: FC<Props> = ({ label, placeholder, error, informations, refs, I
         {
           (error && informations) 
           &&
-          <div className='group'>
+          <div className='group relative shrink-0'>
             <AiOutlineInfoCircle className='text-2xl' />
-            <div className='absolute hidden group-hover:block bg-neutral-800 p-2 shadow-xl'>
+            <div className='absolute right-0 z-50 hidden w-56 max-w-[70vw] group-hover:block bg-neutral-800 p-2 shadow-xl rounded-md'>
               {
                 informations.map((info: string, index: number) => {
                   return <p key={index}>* {info}</p>

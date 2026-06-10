@@ -50,17 +50,17 @@ const ChatInput: FC<Props> = ({ channelId }) => {
 
     try {
       const result = images && (await uploadImages(images));
-    const message = {
-      text: e.target.chat.value,
-      userId: user?.id,
-      images: result || null,
-      user: {
-        username: user?.username
-      },
-      channelId
-    };
+      const message = {
+        text: e.target.chat.value,
+        userId: user?.id,
+        images: result || null,
+        user: {
+          username: user?.username
+        },
+        channelId
+      };
 
-    setImages(null);
+      setImages(null);
       socket.timeout(5000).emit('chat', message, (error: Error | null, response: any) => {
         setIsPending(false);
 
@@ -131,18 +131,18 @@ const ChatInput: FC<Props> = ({ channelId }) => {
         </p>
       )}
       {images && (
-        <div className="pb-3 flex items-center">
+        <div className="pb-3 flex flex-wrap items-center gap-2">
           <GiCancel onClick={() => setImages(null)} className="mx-4 cursor-pointer" />
           {Array.from({ length: images!.length }, (_, i) => i).map((index) => {
             return (
-              <span className="mx-2" key={index}>
+              <span className="max-w-full truncate text-sm text-neutral-300" key={index}>
                 {images![index].name}
               </span>
             );
           })}
         </div>
       )}
-      <div className="flex justify-around items-center">
+      <div className="flex items-center gap-2">
         <input
           ref={uploadInputRef}
           type="file"
@@ -151,7 +151,7 @@ const ChatInput: FC<Props> = ({ channelId }) => {
           hidden
           accept="image/png, image/jpeg"
         />
-        <button type="button" onClick={handleUploadImage}>
+        <button type="button" aria-label="Attach images" className="shrink-0 p-2" onClick={handleUploadImage}>
           <ImAttachment className="text-2xl hover:text-neutral-300 duration-200" />
         </button>
         <input
@@ -160,9 +160,9 @@ const ChatInput: FC<Props> = ({ channelId }) => {
           type="text"
           name="chat"
           onChange={handleTyping}
-          className="bg-neutral-800 rounded-lg w-[90%] h-10 outline-none p-2"
+          className="bg-neutral-800 rounded-lg min-w-0 flex-1 h-10 outline-none p-2"
         />
-        <button type="submit" disabled={isPending}>
+        <button type="submit" aria-label="Send message" className="shrink-0 p-2 disabled:opacity-60" disabled={isPending}>
           <IoMdSend className="text-2xl hover:text-neutral-300 duration-200" />
         </button>
       </div>

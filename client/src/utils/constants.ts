@@ -1,7 +1,11 @@
 const isDev = import.meta.env.DEV;
+const API_ORIGIN = import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_SOCKET_URL;
 
-export const API_BASE_URL = import.meta.env.VITE_APP_API_BASE_URL || (isDev ? 'http://localhost:5000/api' : '');
-export const SOCKET_URL = import.meta.env.VITE_APP_SOCKET_URL || (isDev ? 'http://localhost:5000' : '');
+export const API_BASE_URL =
+  import.meta.env.VITE_APP_API_BASE_URL ||
+  (API_ORIGIN ? `${API_ORIGIN.replace(/\/$/, '')}/api` : '') ||
+  (isDev ? 'http://localhost:5000/api' : '');
+export const SOCKET_URL = API_ORIGIN || (isDev ? 'http://localhost:5000' : '');
 export const CLOUD_NAME = import.meta.env.VITE_APP_CLOUD_NAME;
 export const UPLOAD_PRESET = import.meta.env.VITE_APP_UPLOAD_PRESET;
 

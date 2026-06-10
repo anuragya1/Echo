@@ -19,10 +19,10 @@ const PasswordInput: FC<Props> = ({ label, placeholder, error, refs, Icon }) => 
         {label}
       </label>
       <div className={`flex items-center border-b transition-all duration-100 ${error ? 'border-red-500' : 'border-neutral-500 focus-within:border-white'}`}>
-        <Icon className='text-2xl text-white' />
+        <Icon className='text-2xl text-white shrink-0' />
         <input
           type={isVisible ? 'text' : 'password'}
-          className='pl-3 text-white text-lg bg-transparent p-2 w-full outline-none placeholder-neutral-500'
+          className='pl-3 text-white text-lg bg-transparent p-2 min-w-0 flex-1 outline-none placeholder-neutral-500'
           placeholder={placeholder}
           name={label}
           {...refs}
@@ -30,9 +30,9 @@ const PasswordInput: FC<Props> = ({ label, placeholder, error, refs, Icon }) => 
         {
           isVisible
             ?
-            <AiFillEye onClick={() => setIsVisible(prev => !prev)} className="text-2xl cursor-pointer" />
+            <AiFillEye onClick={() => setIsVisible(prev => !prev)} className="text-2xl cursor-pointer shrink-0" />
             :
-            <AiFillEyeInvisible onClick={() => setIsVisible(prev => !prev)} className="text-2xl cursor-pointer" />
+            <AiFillEyeInvisible onClick={() => setIsVisible(prev => !prev)} className="text-2xl cursor-pointer shrink-0" />
         }
       </div>
       {
